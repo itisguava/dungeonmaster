@@ -1135,6 +1135,17 @@
   </div>
 </div>
 
+<!-- DEATH SCREEN -->
+<div id="deathScreen" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0);z-index:9998;flex-direction:column;align-items:center;justify-content:center;transition:background 1s;">
+  <div id="deathContent" style="text-align:center;opacity:0;transition:opacity 1.5s;transform:scale(0.8);transition:opacity 1.5s, transform 1s;">
+    <div style="font-size:3rem;font-weight:800;color:#cc2222;text-shadow:0 0 40px rgba(200,30,30,0.6),0 0 80px rgba(200,30,30,0.3);letter-spacing:8px;margin-bottom:16px;">YOU DIED</div>
+    <div id="deathFloor" style="font-size:1rem;color:#c89b3c;margin-bottom:12px;"></div>
+    <div id="deathStats" style="font-size:0.85rem;color:#aaa;line-height:2;max-width:300px;margin:0 auto;"></div>
+    <div id="deathKiller" style="font-size:0.9rem;color:#ff6644;margin:12px 0;"></div>
+    <button id="deathCloseBtn" style="margin-top:16px;padding:10px 24px;font-size:0.9rem;background:linear-gradient(135deg,#883333,#662222);color:#ffcccc;">Return</button>
+  </div>
+</div>
+
 <!-- TUTORIAL OVERLAY -->
 <div id="tutorialOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:9999;overflow-y:auto;padding:20px;">
   <div style="max-width:700px;margin:0 auto;background:linear-gradient(135deg,#1e1e24,#16161a);border:1px solid rgba(200,155,60,0.3);border-radius:14px;padding:24px;box-shadow:0 8px 40px rgba(0,0,0,0.6);">
@@ -4831,7 +4842,7 @@ function genDungeon(floor){
   const eMult=floorMod.effect.enemyMult||1;
   for(let i=1;i<rooms.length-1;i++){const r=rooms[i];const numE=Math.ceil((1+Math.floor(Math.random()*2))*eMult);for(let j=0;j<numE;j++){
     const ex=r.x+1+Math.floor(Math.random()*(r.w-2)),ey=r.y+1+Math.floor(Math.random()*(r.h-2));
-    if(map[ey][ex]===DT.FLOOR){const t=ePool[Math.floor(Math.random()*ePool.length)];enemies.push({x:ex*DTS+DTS/2,y:ey*DTS+DTS/2,data:{...t},alive:true,dir:Math.random()*Math.PI*2,moveTimer:0});}
+    if(map[ey][ex]===DT.FLOOR){const t=ePool[Math.floor(Math.random()*ePool.length)];const isGolden=Math.random()<0.01;const eData=isGolden?{...t,name:'Golden '+t.name,color:'#ffdd44',goldMin:t.goldMin*5,goldMax:t.goldMax*5,baseHp:Math.round(t.baseHp*1.5)}:{...t};enemies.push({x:ex*DTS+DTS/2,y:ey*DTS+DTS/2,data:eData,alive:true,dir:Math.random()*Math.PI*2,moveTimer:0,golden:isGolden});}
   }}
   const chests=[];const loot=floor>=20&&typeof getEndlessLoot==='function'?getEndlessLoot(floor):DUNGEON_LOOT_TABLE[Math.min(floor,DUNGEON_LOOT_TABLE.length-1)];
   const cMult=floorMod.effect.chestMult||1;
@@ -4889,12 +4900,12 @@ function dungeonTick(){
   // Paladin passive heal (1 HP/sec)
   if(typeof getPlayerClass==='function'&&getPlayerClass().passiveHeal&&dungeon.hp<dungeon.maxHp){dungeon.hp=Math.min(dungeon.maxHp,dungeon.hp+1/30);}
   // Poison tick from modifier
-  if(dungeon.modifier&&dungeon.modifier.effect.poisonTick){if(!dungeon._poisonTick)dungeon._poisonTick=0;dungeon._poisonTick++;if(dungeon._poisonTick>=30){dungeon._poisonTick=0;dungeon.hp--;spawnFloatingNumber(dungeon.px,dungeon.py-15,'-1','#66cc33');updateDungeonHp();if(dungeon.hp<=0){endDungeon(false);return;}}}
+  if(dungeon.modifier&&dungeon.modifier.effect.poisonTick){if(!dungeon._poisonTick)dungeon._poisonTick=0;dungeon._poisonTick++;if(dungeon._poisonTick>=30){dungeon._poisonTick=0;dungeon.hp--;dungeon._lastHitBy='Toxic Fog';spawnFloatingNumber(dungeon.px,dungeon.py-15,'-1','#66cc33');updateDungeonHp();if(dungeon.hp<=0){endDungeon(false);return;}}}
   // Trap check
   const ptx2=Math.floor(dungeon.px/DTS),pty2=Math.floor(dungeon.py/DTS);
   if(ptx2>=0&&ptx2<DW&&pty2>=0&&pty2<DH){
     const tile=dungeon.map[pty2][ptx2];
-    if(tile===DT.TRAP_SPIKE){dungeon.map[pty2][ptx2]=DT.FLOOR;const dmg=3+dungeon.floor;dungeon.hp-=dmg;spawnFloatingNumber(dungeon.px,dungeon.py-15,'-'+dmg,'#ff4444');addDungeonLog('💀 Spike trap! -'+dmg+' HP');spawnDungeonParticle(dungeon.px,dungeon.py,'#ff4444',6,3);updateDungeonHp();if(dungeon.hp<=0){endDungeon(false);return;}}
+    if(tile===DT.TRAP_SPIKE){dungeon.map[pty2][ptx2]=DT.FLOOR;const dmg=3+dungeon.floor;dungeon.hp-=dmg;dungeon._lastHitBy='Spike Trap';spawnFloatingNumber(dungeon.px,dungeon.py-15,'-'+dmg,'#ff4444');addDungeonLog('💀 Spike trap! -'+dmg+' HP');spawnDungeonParticle(dungeon.px,dungeon.py,'#ff4444',6,3);updateDungeonHp();if(dungeon.hp<=0){endDungeon(false);return;}}
     // Secret wall — attack to break
     // Check adjacent tiles for secret walls when attacking
     if(dKeys.attack){const dirs2=[[-1,0],[1,0],[0,-1],[0,1]];for(const d of dirs2){const sx=ptx2+d[0],sy=pty2+d[1];if(sx>=0&&sx<DW&&sy>=0&&sy<DH&&dungeon.map[sy][sx]===DT.SECRET){dungeon.map[sy][sx]=DT.FLOOR;addDungeonLog('🔓 Secret wall broken! Hidden room revealed!');spawnDungeonParticle(sx*DTS+DTS/2,sy*DTS+DTS/2,'#ffdd44',12,4);}}}
@@ -4958,7 +4969,7 @@ function dungeonTick(){
         // Hit player during charge
         if(distToPlayer<20){
           const chargeDmg=Math.round(bd.atk*sc*0.8);
-          dungeon.hp-=chargeDmg;
+          dungeon.hp-=chargeDmg;dungeon._lastHitBy=bd.name+' (charge)';
           spawnFloatingNumber(dungeon.px,dungeon.py-15,'-'+chargeDmg,'#ff3333');
           spawnDungeonParticle(dungeon.px,dungeon.py,'#ff4444',8,4);
           e.charging=false;
@@ -4982,7 +4993,7 @@ function dungeonTick(){
         }else if(ab2==='aoe'&&distToPlayer<(bd.aoeRange||60)){
           // AOE slam
           const aoeDmg=Math.round((bd.aoeDmg||20)*sc*0.5);
-          dungeon.hp-=aoeDmg;
+          dungeon.hp-=aoeDmg;dungeon._lastHitBy=bd.name+' (slam)';
           spawnFloatingNumber(dungeon.px,dungeon.py-20,'-'+aoeDmg+' AOE','#ff8844');
           spawnDungeonParticle(e.x,e.y,'#ff8844',15,5);
           addDungeonLog('💥 '+bd.name+' slams the ground!');
@@ -5016,7 +5027,7 @@ function dungeonTick(){
           e.atkTimer=bd.atkSpeed||25;
           const eAtk=Math.round(bd.atk*sc);
           let ed2=Math.max(1,eAtk-getTotalArmorStats().def);
-          dungeon.hp-=ed2;
+          dungeon.hp-=ed2;dungeon._lastHitBy=bd.name;
           spawnFloatingNumber(dungeon.px+Math.random()*10-5,dungeon.py-15,'-'+ed2,'#ff3333');
           updateDungeonHp();
           if(dungeon.hp<=0){endDungeon(false);return;}
@@ -5042,7 +5053,7 @@ function dungeonTick(){
           if(typeof getSkillValue==='function')ed2=Math.max(1,ed2-getSkillValue('dmgReduce',0));
           // Thorns reflect
           if(thornsCounter>0){const ref=Math.round(ed2*0.5);e.curHp-=ref;}
-          dungeon.hp-=ed2;
+          dungeon.hp-=ed2;dungeon._lastHitBy=e.data.name;
           spawnFloatingNumber(dungeon.px+Math.random()*10-5,dungeon.py-15,'-'+ed2,'#ff3333');
           updateDungeonHp();
           if(dungeon.hp<=0){endDungeon(false);return;}
@@ -5126,6 +5137,7 @@ function dungeonTick(){
         updateGold(g);
         spawnFloatingNumber(e.x,e.y-5,'+'+g+'g','#ffdd44');
         addDungeonLog('Killed '+e.data.name+'! +'+g+'g');
+        if(e.golden){addDungeonLog('✨ GOLDEN ENEMY! Massive gold bonus!');spawnDungeonParticle(e.x,e.y,'#ffdd44',20,6);spawnDungeonParticle(e.x,e.y,'#ffee88',15,5);}
         if(e.isBoss){addDungeonLog('👑 BOSS DEFEATED! Massive bonus!');if(typeof addXP==='function')addXP(100+dungeon.floor*20);spawnDungeonParticle(e.x,e.y,'#ffdd44',20,6);spawnDungeonParticle(e.x,e.y,'#ff4444',15,5);}
         if(sw.enchantment==='vampiric'){const h=Math.round(pd*0.2);dungeon.hp=Math.min(dungeon.maxHp,dungeon.hp+h);}
         // Warrior on-kill heal
@@ -5287,7 +5299,21 @@ function drawDungeon(){
       ctx.beginPath();ctx.arc(ex2,ey2-10*sz,4*sz,0,Math.PI*2);ctx.fill();
       ctx.fillStyle='#ff3333';ctx.beginPath();ctx.arc(ex2-2*sz,ey2-10*sz,1.2,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(ex2+2*sz,ey2-10*sz,1.2,0,Math.PI*2);ctx.fill();
     }
-    ctx.fillStyle='#fff8';ctx.font='7px Arial';ctx.textAlign='center';ctx.fillText(e.data.name,ex2,ey2-14*sz-2);
+    // Golden enemy sparkle
+    if(e.golden){
+      ctx.save();ctx.globalAlpha=0.4+Math.sin(Date.now()*0.008)*0.2;
+      ctx.shadowColor='#ffdd44';ctx.shadowBlur=10;
+      ctx.strokeStyle='#ffdd44';ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.arc(ex2,ey2-5*sz,8*sz,0,Math.PI*2);ctx.stroke();
+      // Sparkle particles
+      for(let sp=0;sp<3;sp++){
+        const sa=Date.now()*0.005+sp*2.1;
+        const sr=6*sz+Math.sin(sa*2)*3;
+        ctx.fillStyle='#ffee88';ctx.beginPath();ctx.arc(ex2+Math.cos(sa)*sr,ey2-5*sz+Math.sin(sa)*sr*0.6,1.2,0,Math.PI*2);ctx.fill();
+      }
+      ctx.restore();
+    }
+    ctx.fillStyle=e.golden?'#ffdd44':'#fff8';ctx.font=e.golden?'bold 7px Arial':'7px Arial';ctx.textAlign='center';ctx.fillText(e.data.name,ex2,ey2-14*sz-2);
     // HP bar
     if(e.curHp&&e.maxHp){
       const hbW2=16,hbH2=3,hbX2=ex2-hbW2/2,hbY2=ey2-14*sz-8;
@@ -5354,8 +5380,53 @@ function drawDungeon(){
     else{ctx.translate(ppx+6,ppy-4+bob);ctx.rotate(-0.2+swingAngle);}
     ctx.fillStyle=mc3;ctx.fillRect(-1,-12,3,12);
     ctx.fillStyle='#c89b3c';ctx.fillRect(-3,0,7,2);
+    // Enchantment glow on weapon
+    if(esw.enchantment){
+      const enchGlowColors={fire:'#ff4422',ice:'#66ccff',lightning:'#ffff44',poison:'#44bb33',wind:'#88ccaa',holy:'#ffeeaa',shadow:'#8866cc',vampiric:'#cc2255',arcane:'#9944cc',void:'#6622aa',celestial:'#ffeedd',godforge:'#ff44ff',berserker:'#dd5533',necro:'#44aa44',earth:'#998855',thorns:'#669933',bleed:'#cc3344',gravity:'#6644aa',frost:'#88ddff',explosive:'#ff8822',chaos:'#ff44aa',timewarp:'#44ddcc',phoenix:'#ff6600'};
+      const gc=enchGlowColors[esw.enchantment];
+      if(gc){ctx.save();ctx.shadowColor=gc;ctx.shadowBlur=8+Math.sin(Date.now()*0.006)*3;ctx.globalAlpha=0.6;ctx.fillStyle=gc;ctx.fillRect(-1,-12,3,12);ctx.restore();}
+    }
     // Swing trail effect
-    if(swinging){ctx.save();ctx.globalAlpha=0.3;ctx.strokeStyle=mc3;ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,12,-1.5+swingAngle,-0.2+swingAngle);ctx.stroke();ctx.restore();}
+    if(swinging){const swTrailColor=esw.enchantment?{fire:'#ff4422',ice:'#66ccff',lightning:'#ffff44',poison:'#44bb33',shadow:'#8866cc',holy:'#ffeeaa',arcane:'#9944cc',void:'#6622aa',godforge:'#ff44ff',phoenix:'#ff6600'}[esw.enchantment]||mc3:mc3;ctx.save();ctx.globalAlpha=0.3;ctx.strokeStyle=swTrailColor;ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,12,-1.5+swingAngle,-0.2+swingAngle);ctx.stroke();ctx.restore();}
+    ctx.restore();
+    // Trail particles when walking with enchanted weapon
+    if(esw.enchantment&&(dKeys.left||dKeys.right||dKeys.up||dKeys.down)){
+      const trailColors={fire:'#ff6622',ice:'#88ddff',lightning:'#ffff66',poison:'#66cc44',shadow:'#8866cc',holy:'#ffeeaa',void:'#6622aa',arcane:'#cc88ff',celestial:'#ffeedd',godforge:'#ff66ff',phoenix:'#ff8844',bleed:'#cc4444',frost:'#aaeeff',chaos:'#ff66bb',timewarp:'#66eedd'};
+      const tc=trailColors[esw.enchantment];
+      if(tc&&Math.random()<0.3){spawnDungeonParticle(dungeon.px+Math.random()*6-3,dungeon.py+4,tc,1,1);}
+    }
+  }
+  // Player aura in dungeon (from character tab selection)
+  const dAura=document.getElementById('charAura')?document.getElementById('charAura').value:'none';
+  if(dAura!=='none'){
+    const t2=Date.now()*0.004;
+    const aColors={fire:'rgba(255,80,20,',ice:'rgba(80,180,255,',holy:'rgba(255,230,150,',shadow:'rgba(80,20,120,',arcane:'rgba(160,80,255,',nature:'rgba(60,200,80,'};
+    const ac2=aColors[dAura]||'rgba(255,255,255,';
+    ctx.save();
+    // Glow ring
+    ctx.globalAlpha=0.12+Math.sin(t2)*0.05;
+    ctx.strokeStyle=ac2+'0.6)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(ppx,ppy-4+bob,12+Math.sin(t2*1.5)*2,0,Math.PI*2);ctx.stroke();
+    // Orbiting particles
+    ctx.globalAlpha=0.5;
+    for(let i=0;i<4;i++){
+      const a3=t2+i*Math.PI/2;
+      const pr2=10+Math.sin(t2*2+i)*3;
+      const px3=ppx+Math.cos(a3)*pr2;
+      const py3=ppy-4+bob+Math.sin(a3)*6;
+      ctx.fillStyle=ac2+'0.6)';ctx.beginPath();ctx.arc(px3,py3,1.2,0,Math.PI*2);ctx.fill();
+    }
+    ctx.restore();
+  }
+  // Prestige glow (subtle golden ring at high prestige)
+  if(typeof prestigeLevel!=='undefined'&&prestigeLevel>=5){
+    ctx.save();ctx.globalAlpha=0.08+prestigeLevel*0.01;
+    ctx.strokeStyle='#c89b3c';ctx.lineWidth=1;
+    ctx.beginPath();ctx.arc(ppx,ppy-4+bob,14,0,Math.PI*2);ctx.stroke();
+    if(typeof ascensionTier!=='undefined'&&ascensionTier>0){
+      ctx.strokeStyle='#ff44ff';ctx.lineWidth=1.5;ctx.globalAlpha=0.1+ascensionTier*0.05;
+      ctx.beginPath();ctx.arc(ppx,ppy-4+bob,16+Math.sin(Date.now()*0.003)*2,0,Math.PI*2);ctx.stroke();
+    }
     ctx.restore();
   }
   // Player title above head
@@ -5451,10 +5522,37 @@ function loadFloor(floor){dungeon.floor=floor;const gen=genDungeon(floor);dungeo
   if(dungeon.modifier&&dungeon.modifier.id!=='normal')addDungeonLog('⚠️ '+dungeon.modifier.name+': '+dungeon.modifier.desc);
   updateDungeonHp();}
 function dReveal(){const r=4;const ptx=Math.floor(dungeon.px/DTS),pty=Math.floor(dungeon.py/DTS);for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){const nx=ptx+dx,ny=pty+dy;if(nx>=0&&nx<DW&&ny>=0&&ny<DH)dungeon.explored[ny][nx]=true;}}
+function showDeathScreen(){
+  const ds=document.getElementById('deathScreen');
+  const dc=document.getElementById('deathContent');
+  ds.style.display='flex';
+  // Count enemies killed this run
+  const killsThisRun=dungeon.enemies?dungeon.enemies.filter(e=>!e.alive).length:0;
+  document.getElementById('deathFloor').textContent='Fell on Floor '+(dungeon.floor+1)+' — '+FLOOR_THEMES[Math.min(dungeon.floor,FLOOR_THEMES.length-1)].name;
+  document.getElementById('deathKiller').textContent=dungeon._lastHitBy?'Slain by: '+dungeon._lastHitBy:'';
+  document.getElementById('deathStats').innerHTML=
+    'Enemies Killed: <strong style="color:#dd4444;">'+killsThisRun+'</strong><br>'+
+    'Loot Found: <strong style="color:#ffdd44;">'+dungeon.loot.length+' items</strong><br>'+
+    'Combo Record: <strong style="color:#ff8844;">'+(comboCount||0)+'x</strong><br>'+
+    (dungeon.challenge&&dungeon.challenge!=='none'?'Challenge: <strong style="color:#cc88ff;">'+dungeon.challenge+'</strong><br>':'')+
+    '<span style="color:#666;font-size:0.75rem;">Your sword was lost. Half your loot was salvaged.</span>';
+  // Animate in
+  setTimeout(()=>{ds.style.background='rgba(8,0,0,0.9)';},50);
+  setTimeout(()=>{dc.style.opacity='1';dc.style.transform='scale(1)';},300);
+}
+document.getElementById('deathCloseBtn').addEventListener('click',()=>{
+  const ds=document.getElementById('deathScreen');
+  ds.style.display='none';
+  ds.style.background='rgba(0,0,0,0)';
+  document.getElementById('deathContent').style.opacity='0';
+  document.getElementById('deathContent').style.transform='scale(0.8)';
+  refreshDungeon();
+});
+
 function endDungeon(success){
   // Check for Second Wind revive
   if(!success&&dungeon._hasRevive){dungeon._hasRevive=false;dungeon.hp=Math.round(dungeon.maxHp*0.5);addDungeonLog('🌟 Second Wind! Revived at 50% HP!');updateDungeonHp();return;}
-  dungeon.active=false;if(dungeon.gameLoop){clearInterval(dungeon.gameLoop);dungeon.gameLoop=null;}if(!success&&typeof playSFX==='function')playSFX('death','C1','4n');if(typeof gameStats!=='undefined'){if(dungeon.floor+1>gameStats.highestFloor)gameStats.highestFloor=dungeon.floor+1;}if(dungeon.floor>endlessRecord)endlessRecord=dungeon.floor;if(typeof refreshEndlessRecord==='function')refreshEndlessRecord();if(success){if(typeof gameStats!=='undefined'){gameStats.dungeonsCompleted++;gameStats.floorsCleared+=dungeon.floor+1;}if(typeof addXP==='function')addXP(50+dungeon.floor*15);addDungeonLog('=== DUNGEON COMPLETE ===\nLoot: '+dungeon.loot.length+' items');const bonus=15+dungeon.floor*10;updateGold(bonus);addDungeonLog('Bonus: +'+bonus+' gold!');}else{if(typeof gameStats!=='undefined'){gameStats.deaths++;gameStats.floorsCleared+=dungeon.floor;}addDungeonLog('=== YOU DIED ===');inventory.splice(equippedIndex,1);equippedIndex=-1;dungeon.loot=dungeon.loot.slice(0,Math.ceil(dungeon.loot.length/2));addDungeonLog('Lost your sword. Salvaged '+dungeon.loot.length+' items.');}updateDungeonLootDisplay();document.getElementById('enterDungeonBtn').style.display='block';if(typeof saveGame==='function')saveGame();}
+  dungeon.active=false;if(dungeon.gameLoop){clearInterval(dungeon.gameLoop);dungeon.gameLoop=null;}if(!success&&typeof playSFX==='function')playSFX('death','C1','4n');if(typeof gameStats!=='undefined'){if(dungeon.floor+1>gameStats.highestFloor)gameStats.highestFloor=dungeon.floor+1;}if(dungeon.floor>endlessRecord)endlessRecord=dungeon.floor;if(typeof refreshEndlessRecord==='function')refreshEndlessRecord();if(success){if(typeof gameStats!=='undefined'){gameStats.dungeonsCompleted++;gameStats.floorsCleared+=dungeon.floor+1;}if(typeof addXP==='function')addXP(50+dungeon.floor*15);addDungeonLog('=== DUNGEON COMPLETE ===\nLoot: '+dungeon.loot.length+' items');const bonus=15+dungeon.floor*10;updateGold(bonus);addDungeonLog('Bonus: +'+bonus+' gold!');}else{if(typeof gameStats!=='undefined'){gameStats.deaths++;gameStats.floorsCleared+=dungeon.floor;}addDungeonLog('=== YOU DIED ===');inventory.splice(equippedIndex,1);equippedIndex=-1;dungeon.loot=dungeon.loot.slice(0,Math.ceil(dungeon.loot.length/2));addDungeonLog('Lost your sword. Salvaged '+dungeon.loot.length+' items.');if(typeof showDeathScreen==='function')showDeathScreen();}updateDungeonLootDisplay();document.getElementById('enterDungeonBtn').style.display='block';if(typeof saveGame==='function')saveGame();}
 
 document.addEventListener('keydown',(e)=>{if(!dungeon.active)return;const dt=document.getElementById('tab-dungeon');if(!dt||!dt.classList.contains('active'))return;if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A'){e.preventDefault();dKeys.left=true;}if(e.key==='ArrowRight'||e.key==='d'||e.key==='D'){e.preventDefault();dKeys.right=true;}if(e.key==='ArrowUp'||e.key==='w'||e.key==='W'){e.preventDefault();dKeys.up=true;}if(e.key==='ArrowDown'||e.key==='s'||e.key==='S'){e.preventDefault();dKeys.down=true;}if(e.key===' '){e.preventDefault();dKeys.attack=true;}if(e.key>='1'&&e.key<='4'){e.preventDefault();useAbility(parseInt(e.key)-1);}checkDodge(e.key);});
 document.addEventListener('keyup',(e)=>{if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A')dKeys.left=false;if(e.key==='ArrowRight'||e.key==='d'||e.key==='D')dKeys.right=false;if(e.key==='ArrowUp'||e.key==='w'||e.key==='W')dKeys.up=false;if(e.key==='ArrowDown'||e.key==='s'||e.key==='S')dKeys.down=false;if(e.key===' ')dKeys.attack=false;});
@@ -6562,8 +6660,10 @@ setInterval(saveGame,30000);
 // ══════════════════════════════════════
 // INIT
 // ══════════════════════════════════════
+try{
 initCharPickers();
-const didLoad=loadGame();
+let didLoad=false;
+try{didLoad=loadGame();}catch(e){console.error('Save load failed, clearing:',e);try{localStorage.removeItem('dungeonMasterSave');}catch(ex){}}
 drawCharacter();
 updateDifficultyDisplay();
 updateWeaponTypeDisplay();
@@ -6580,6 +6680,7 @@ if(typeof refreshTitleUI==='function')refreshTitleUI();
 if(typeof updateClassDesc==='function')updateClassDesc();
 if(didLoad){refreshInventory();refreshMaterialDisplay();initCharPickers();drawCharacter();}
 if(didLoad)addDungeonLog('💾 Save data loaded!');
+}catch(initErr){console.error('INIT error:',initErr);}
 
 // ══════════════════════════════════════
 // SETTINGS
