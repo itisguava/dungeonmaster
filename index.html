@@ -199,6 +199,7 @@
 <div class="topBar">
   <h1>Dungeon Master</h1>
   <button id="musicToggle" style="margin-left:8px;padding:4px 10px;font-size:0.75rem;background:linear-gradient(180deg,#444,#333);color:#aaa;border-radius:12px;">Music: OFF</button>
+  <button id="helpBtn" style="padding:2px 8px;font-size:0.9rem;background:linear-gradient(135deg,#555,#444);color:#ffdd44;border-radius:50%;font-weight:bold;min-width:28px;height:28px;">?</button>
   <div style="margin-left:auto;display:flex;align-items:center;gap:12px;">
     <div style="display:flex;align-items:center;gap:6px;">
       <span id="levelDisplay" style="font-size:0.85rem;color:#cc88ff;font-weight:bold;">Lv.1</span>
@@ -250,17 +251,17 @@
         <option value="iron">Iron</option>
         <option value="steel">Steel</option>
         <option value="damascus" class="locked-material" disabled>Damascus Steel (Locked)</option>
-        <option value="mithril" class="locked-material" disabled>Mithril (Locked)</option>
-        <option value="titanium" class="locked-material" disabled>Titanium (Locked)</option>
-        <option value="obsidian" class="locked-material" disabled>Obsidian (Locked)</option>
-        <option value="dragonbone" class="locked-material" disabled>Dragonbone (Locked)</option>
-        <option value="adamantine" class="locked-material" disabled>Adamantine (Locked)</option>
-        <option value="deepstone" class="dungeon-material" disabled>Deepstone (Need materials)</option>
         <option value="glowmetal" class="dungeon-material" disabled>Glowmetal (Need materials)</option>
+        <option value="mithril" class="locked-material" disabled>Mithril (Locked)</option>
+        <option value="obsidian" class="locked-material" disabled>Obsidian (Locked)</option>
         <option value="cavecrystal" class="dungeon-material" disabled>Crystal Blade (Need materials)</option>
-        <option value="shadowsteel" class="dungeon-material" disabled>Shadow Steel (Need materials)</option>
-        <option value="soulforge" class="dungeon-material" disabled>Soulforged (Need materials)</option>
         <option value="cursedmetal" class="dungeon-material" disabled>Cursed Metal (Need materials)</option>
+        <option value="shadowsteel" class="dungeon-material" disabled>Shadow Steel (Need materials)</option>
+        <option value="deepstone" class="dungeon-material" disabled>Deepstone (Need materials)</option>
+        <option value="dragonbone" class="locked-material" disabled>Dragonbone (Locked)</option>
+        <option value="titanium" class="locked-material" disabled>Titanium (Locked)</option>
+        <option value="adamantine" class="locked-material" disabled>Adamantine (Locked)</option>
+        <option value="soulforge" class="dungeon-material" disabled>Soulforged (Need materials)</option>
       </select>
       <div id="metalStats" style="font-size:0.75rem;color:#888;margin:0 0 6px;padding:4px 8px;background:#16161a;border-radius:4px;"></div>
       <label>Blade Length</label>
@@ -601,6 +602,15 @@
       <h2>Design Your Character</h2>
       <div class="designRow">
         <div class="designControls">
+          <label>Class</label>
+          <select id="charClass">
+            <option value="warrior">⚔️ Warrior — +20% HP, +10% DMG</option>
+            <option value="rogue">🗡️ Rogue — +25% Crit, +20% Speed</option>
+            <option value="mage">🔮 Mage — +40% Mana, +15% Ability DMG</option>
+            <option value="paladin">🛡️ Paladin — +15% DEF, passive heal</option>
+          </select>
+          <div id="classDesc" style="font-size:0.72rem;color:#888;padding:4px 8px;background:#16161a;border-radius:4px;margin-bottom:8px;"></div>
+
           <label>Name</label>
           <input type="text" id="charName" value="Knight" maxlength="20" style="width:100%;padding:6px;border-radius:4px;border:1px solid #555;background:#333;color:#f0f0f0;margin-bottom:8px;">
 
@@ -808,6 +818,7 @@
     <div class="panel wide">
       <h2>Dungeon Crawler</h2>
       <div id="dungeonNeedSword" style="color:#cc8844;margin:6px 0;">Equip a sword from your inventory before entering the dungeon.</div>
+      <div id="dungeonEquipInfo" style="font-size:0.8rem;color:#888;margin:4px 0;padding:6px 10px;background:#16161a;border-radius:6px;border:1px solid #2a2a30;"></div>
       <div id="dungeonUI" style="display:none;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
           <div style="font-size:0.9rem;color:#aaa;">
@@ -857,6 +868,13 @@
           <div style="flex:0 0 130px;">
             <h3 style="margin-top:0;font-size:0.8rem;">Minimap</h3>
             <canvas id="minimapCanvas" width="130" height="130" style="background:#111;border:1px solid #333;border-radius:6px;display:block;width:100%;"></canvas>
+            <div style="font-size:0.6rem;color:#666;margin-top:3px;line-height:1.5;">
+              <span style="color:#44ff77;">■</span> You
+              <span style="color:#cc3333;margin-left:4px;">■</span> Enemy
+              <span style="color:#ccaa22;margin-left:4px;">■</span> Chest
+              <span style="color:#44aa88;margin-left:4px;">■</span> Stairs
+              <span style="color:#ddaa33;margin-left:4px;">■</span> NPC
+            </div>
             <h3 style="font-size:0.8rem;">Loot</h3>
             <div id="dungeonLoot" style="font-size:0.75rem;max-height:120px;overflow-y:auto;background:#16161a;padding:6px;border-radius:4px;border:1px solid #2a2a30;">No loot yet.</div>
           </div>
@@ -873,6 +891,17 @@
       </div>
       <div id="checkpointInfo" style="font-size:0.75rem;color:#888;margin-top:4px;"></div>
       <div id="endlessRecord" style="font-size:0.75rem;color:#888;margin-top:2px;"></div>
+      <div style="margin-top:8px;">
+        <label style="margin:0 0 4px;">Challenge Mode</label>
+        <select id="challengeMode" style="width:auto;min-width:200px;">
+          <option value="none">Normal Run</option>
+          <option value="glass">Glass Cannon (1 HP, 5x DMG, 3x gold)</option>
+          <option value="speedrun">Speed Run (60s per floor, 2x XP)</option>
+          <option value="noAbility">No Abilities (abilities disabled, +50% gold)</option>
+          <option value="bossRush">Boss Rush (every floor is a boss)</option>
+          <option value="ironman">Ironman (no healing at all, 2x XP)</option>
+        </select>
+      </div>
     </div>
   </div>
 </div>
@@ -975,14 +1004,23 @@
           <div id="statsDisplay" style="font-size:0.85rem;line-height:1.8;"></div>
         </div>
         <div style="flex:1;min-width:200px;">
-          <h3>Prestige</h3>
-          <div style="font-size:0.85rem;color:#aaa;margin-bottom:8px;">Reset all progress for permanent bonuses. Each prestige level gives:</div>
-          <div style="font-size:0.85rem;color:#c89b3c;">+5% gold from all sources</div>
-          <div style="font-size:0.85rem;color:#cc88ff;">+3% enchantment luck (bigger rare slices)</div>
+          <h3>Prestige & Ascension</h3>
+          <div style="font-size:0.85rem;color:#aaa;margin-bottom:8px;">Reset all progress for permanent bonuses. Gets harder each time.</div>
+          <div style="font-size:0.85rem;color:#c89b3c;">+5% gold per prestige</div>
+          <div style="font-size:0.85rem;color:#cc88ff;">+3% enchantment luck per prestige</div>
           <div style="font-size:0.85rem;color:#44dd77;margin-top:6px;">Current Prestige: <span id="prestigeLevel" style="font-weight:bold;font-size:1.1rem;">0</span></div>
           <div style="font-size:0.8rem;color:#888;margin-top:4px;">Gold bonus: <span id="prestigeGoldBonus">+0%</span> | Luck bonus: <span id="prestigeLuckBonus">+0%</span></div>
+          <div id="prestigeReqDisplay" style="font-size:0.75rem;color:#aa8844;margin-top:4px;"></div>
           <button id="prestigeBtn" style="margin-top:10px;background:linear-gradient(180deg,#9944cc,#7733aa);color:#eeddff;">Prestige (Reset All)</button>
-          <p style="font-size:0.7rem;color:#666;margin-top:4px;">Requires at least Floor 10 dungeon clear or 500 total kills.</p>
+          <div id="ascensionDisplay" style="margin-top:10px;"></div>
+        </div>
+        <div style="flex:1;min-width:200px;">
+          <h3>Titles</h3>
+          <div style="font-size:0.82rem;color:#aaa;margin-bottom:6px;">Active title: <strong id="activeTitleDisplay" style="color:#c89b3c;">None</strong></div>
+          <select id="titleSelect" style="margin-bottom:6px;">
+            <option value="">No Title</option>
+          </select>
+          <div id="unlockedTitles" style="font-size:0.78rem;line-height:1.7;"></div>
         </div>
       </div>
     </div>
@@ -1090,9 +1128,130 @@
           <p style="font-size:0.7rem;color:#666;margin-top:4px;">Warning: this will erase everything and reload the page.</p>
 
           <h3 style="margin-top:16px;">About</h3>
-          <p style="font-size:0.8rem;color:#888;">Sword Maker v1.0<br>Built with Dia</p>
+          <p style="font-size:0.8rem;color:#888;">Dungeon Master v2.0<br>Built with Dia</p>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- TUTORIAL OVERLAY -->
+<div id="tutorialOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:9999;overflow-y:auto;padding:20px;">
+  <div style="max-width:700px;margin:0 auto;background:linear-gradient(135deg,#1e1e24,#16161a);border:1px solid rgba(200,155,60,0.3);border-radius:14px;padding:24px;box-shadow:0 8px 40px rgba(0,0,0,0.6);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h2 style="margin:0;color:#c89b3c;font-size:1.2rem;">How to Play Dungeon Master</h2>
+      <button id="closeTutorial" style="background:#333;color:#fff;border-radius:50%;width:30px;height:30px;font-size:1rem;padding:0;">✕</button>
+    </div>
+
+    <div id="tutorialPages">
+      <!-- Page 1: Overview -->
+      <div class="tutPage" data-page="0">
+        <h3 style="color:#ffdd44;margin:0 0 8px;">Welcome, Adventurer!</h3>
+        <p style="color:#ccc;font-size:0.85rem;line-height:1.6;">Dungeon Master is a weapon crafting RPG. Forge weapons, enchant them, gear up your character, and dive into a 20+ floor dungeon crawler.</p>
+        <div style="background:#16161a;border-radius:8px;padding:12px;margin:10px 0;border:1px solid #2a2a30;">
+          <div style="font-weight:bold;color:#c89b3c;margin-bottom:6px;">Game Loop:</div>
+          <div style="color:#aaa;font-size:0.82rem;line-height:1.8;">
+            1. <span style="color:#ffdd44;">Forge</span> a weapon (choose metal, length, play mini-games)<br>
+            2. <span style="color:#4488cc;">Quench</span> it for bonus durability<br>
+            3. <span style="color:#cc88ff;">Enchant</span> it by spinning the wheel<br>
+            4. <span style="color:#44dd77;">Save</span> it to your inventory & equip it<br>
+            5. <span style="color:#dd4444;">Enter the Dungeon</span> and fight your way through floors<br>
+            6. <span style="color:#c89b3c;">Level up</span>, unlock skills, and prestige for permanent bonuses
+          </div>
+        </div>
+      </div>
+
+      <!-- Page 2: Forging -->
+      <div class="tutPage" data-page="1" style="display:none;">
+        <h3 style="color:#c89b3c;margin:0 0 8px;">Forging Weapons</h3>
+        <div style="color:#aaa;font-size:0.82rem;line-height:1.8;">
+          <strong style="color:#ddd;">Forge Tab</strong> — Where you craft weapons.<br><br>
+          <strong style="color:#ffdd44;">1. Choose your base:</strong> Weapon type, metal, blade length, hilt, and technique. Better materials = better stats, but they cost gold or dungeon materials.<br><br>
+          <strong style="color:#ffdd44;">2. Play mini-games:</strong><br>
+          • <span style="color:#c89b3c;">Metal Spin</span> — Stop the wheel in the green zone<br>
+          • <span style="color:#44dd77;">Reaction Test</span> — Click when the circle turns green<br>
+          • <span style="color:#4488ff;">Rhythm Forge</span> — Press Space when the beat hits the target zone<br><br>
+          <strong style="color:#ffdd44;">3. Design your weapon:</strong> Customize the blade shape, edge style, engravings, and curve.<br><br>
+          <strong style="color:#ffdd44;">4. Quench:</strong> Stop the cursor in the sweet spot for bonus durability.<br><br>
+          <strong style="color:#ffdd44;">5. Save:</strong> Click "Save Current Sword" to add it to your inventory.
+        </div>
+      </div>
+
+      <!-- Page 3: Enchanting & Shop -->
+      <div class="tutPage" data-page="2" style="display:none;">
+        <h3 style="color:#cc88ff;margin:0 0 8px;">Enchanting & Shopping</h3>
+        <div style="color:#aaa;font-size:0.82rem;line-height:1.8;">
+          <strong style="color:#cc88ff;">Enchant Tab</strong> — Spin the wheel (costs 25 gold) to add a random enchantment to your sword. Rarer enchantments have smaller slices. Prestige increases your luck!<br><br>
+          <strong style="color:#ffdd44;">Enchantment Effects in Dungeon:</strong><br>
+          • Fire = flame particles • Ice = slows enemies • Lightning = chains to nearby enemies<br>
+          • Poison = damage over time • Wind = knockback • Explosive = AOE on kill<br><br>
+          <strong style="color:#c89b3c;">Shop Tab</strong> — Buy material unlocks and sell swords. Better metals and hilts need to be unlocked here first.
+        </div>
+      </div>
+
+      <!-- Page 4: Dungeon -->
+      <div class="tutPage" data-page="3" style="display:none;">
+        <h3 style="color:#dd4444;margin:0 0 8px;">Dungeon Crawler</h3>
+        <div style="color:#aaa;font-size:0.82rem;line-height:1.8;">
+          <strong style="color:#ddd;">Controls:</strong><br>
+          <div style="background:#16161a;padding:8px;border-radius:6px;margin:6px 0;font-family:monospace;font-size:0.8rem;color:#ffdd44;">
+            WASD / Arrow Keys — Move<br>
+            Space — Attack nearest enemy<br>
+            R — Dodge roll (direction you're facing)<br>
+            1, 2, 3, 4 — Use equipped abilities<br>
+            Walk onto stairs + S — Go to next floor
+          </div>
+          <strong style="color:#ddd;">Tips:</strong><br>
+          • Equip a sword before entering<br>
+          • Enemies chase you when close — attack with Space<br>
+          • Combo hits for bonus damage (hit quickly in succession)<br>
+          • Find chests for loot and gold<br>
+          • NPCs (merchant/healer) appear in rooms — walk into them<br>
+          • Purple glowing icons are events — walk into them for choices<br>
+          • Cracked walls can be attacked to reveal secret rooms<br>
+          • Boss fights on floors 5, 10, 15, and 20<br>
+          • Enable Mobile Controls in Settings for touch play
+        </div>
+      </div>
+
+      <!-- Page 5: Abilities & Classes -->
+      <div class="tutPage" data-page="4" style="display:none;">
+        <h3 style="color:#4488ff;margin:0 0 8px;">Abilities & Classes</h3>
+        <div style="color:#aaa;font-size:0.82rem;line-height:1.8;">
+          <strong style="color:#4488ff;">Abilities Tab</strong> — Unlock abilities with gold, equip up to 4. Press 1-4 in the dungeon to use them. Mana regens as you walk.<br><br>
+          <strong style="color:#cc88ff;">Classes</strong> (Character Tab):<br>
+          • <span style="color:#dd4444;">Warrior</span> — +20% HP, +10% DMG, heal on kill<br>
+          • <span style="color:#44dd77;">Rogue</span> — +25% crit, faster dodge, +20% speed<br>
+          • <span style="color:#4488ff;">Mage</span> — +40% mana, 2x mana regen, +15% ability DMG<br>
+          • <span style="color:#ffeeaa;">Paladin</span> — passive heal, +15% defense, holy smite every 5th hit<br><br>
+          <strong style="color:#c89b3c;">Skill Tree</strong> (Skills Tab) — Spend skill points (earned by leveling up) on passive buffs across Combat, Defense, and Utility branches.
+        </div>
+      </div>
+
+      <!-- Page 6: Progression -->
+      <div class="tutPage" data-page="5" style="display:none;">
+        <h3 style="color:#44dd77;margin:0 0 8px;">Progression & Endgame</h3>
+        <div style="color:#aaa;font-size:0.82rem;line-height:1.8;">
+          <strong style="color:#cc88ff;">XP & Levels</strong> — Earn XP from kills, forging, and dungeon clears. Each level gives +1 skill point.<br><br>
+          <strong style="color:#9944cc;">Prestige</strong> — Reset progress for permanent +5% gold and +3% enchant luck per level. Gets harder each time.<br><br>
+          <strong style="color:#ff44ff;">Ascension</strong> — Every 10 prestiges triggers an Ascension: massive permanent bonuses (+DMG, +HP, +Gold, +XP).<br><br>
+          <strong style="color:#cc88ff;">Endless Mode</strong> — Toggle in Dungeon tab. After floor 20, the dungeon keeps going with infinitely scaling enemies.<br><br>
+          <strong style="color:#dd6644;">Challenge Modes</strong> — Glass Cannon (1HP/5x DMG), Speed Run, No Abilities, Boss Rush, Ironman.<br><br>
+          <strong style="color:#c89b3c;">Achievements</strong> — Unlock titles, skill points, and auras from hard achievements.
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding-top:12px;border-top:1px solid #2a2a30;">
+      <button id="tutPrev" class="smallButton" style="padding:6px 14px;">← Previous</button>
+      <span id="tutPageNum" style="color:#888;font-size:0.8rem;">1 / 6</span>
+      <button id="tutNext" style="padding:6px 14px;">Next →</button>
+    </div>
+    <div style="text-align:center;margin-top:10px;">
+      <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:0.75rem;color:#666;margin:0;">
+        <input type="checkbox" id="tutDontShow" style="accent-color:#c89b3c;"> Don't show on startup
+      </label>
     </div>
   </div>
 </div>
@@ -1140,9 +1299,9 @@ function updateGold(amount) {
   }
   gold += amount;
   if (gold < 0) gold = 0;
-  document.getElementById('goldDisplay').textContent = 'Gold: ' + gold;
+  document.getElementById('goldDisplay').textContent = 'Gold: ' + gold.toLocaleString();
 }
-function setGold(v) { gold = v; document.getElementById('goldDisplay').textContent = 'Gold: ' + gold; }
+function setGold(v) { gold = v; document.getElementById('goldDisplay').textContent = 'Gold: ' + gold.toLocaleString(); }
 
 // Mini-game completion tracking
 let miniPlayed = { metal: false, reaction: false, rhythm: false };
@@ -1167,7 +1326,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'character') { drawCharacter(); }
     if (tab.dataset.tab === 'armor') { updateArmorDisplay(); }
     if (tab.dataset.tab === 'dungeon') { refreshDungeon(); if(typeof refreshCheckpointUI==='function')refreshCheckpointUI(); }
-    if (tab.dataset.tab === 'stats') { refreshStats(); refreshLeaderboard(); }
+    if (tab.dataset.tab === 'stats') { refreshStats(); refreshLeaderboard(); if(typeof refreshPrestigeUI==='function')refreshPrestigeUI(); if(typeof refreshTitleUI==='function')refreshTitleUI(); }
     if (tab.dataset.tab === 'skills') { refreshSkillTree(); }
     if (tab.dataset.tab === 'achievements') { refreshAchievements(); }
   });
@@ -1888,28 +2047,35 @@ drawQuenchVisual(0);
 // ENCHANTMENTS — Spin Wheel
 // ══════════════════════════════════════
 const ENCHANTMENTS = [
-  // Common (bigger slices)
+  // Common
   {id:'fire',name:'Flame Rune',desc:'+6 DMG, chance to burn',color:'#cc4422',dmg:6,dur:0,weight:4},
-  {id:'ice',name:'Frost Shard',desc:'+3 DMG, +4 DUR, chance to freeze',color:'#44aadd',dmg:3,dur:4,weight:4},
-  {id:'poison',name:'Venom Edge',desc:'+4 DMG, poisons enemies over time',color:'#44bb33',dmg:4,dur:-1,weight:4},
-  {id:'wind',name:'Gale Force',desc:'+5 DMG, chance to push back',color:'#88ccaa',dmg:5,dur:0,weight:3},
+  {id:'ice',name:'Frost Shard',desc:'+3 DMG, +4 DUR, slows enemies',color:'#44aadd',dmg:3,dur:4,weight:4},
+  {id:'poison',name:'Venom Edge',desc:'+4 DMG, poisons over time',color:'#44bb33',dmg:4,dur:-1,weight:4},
+  {id:'wind',name:'Gale Force',desc:'+5 DMG, pushes enemies back',color:'#88ccaa',dmg:5,dur:0,weight:3},
+  {id:'bleed',name:'Razor Bleed',desc:'+4 DMG, enemies bleed over time',color:'#cc3344',dmg:4,dur:1,weight:3},
   // Uncommon
-  {id:'lightning',name:'Storm Bolt',desc:'+8 DMG, chain lightning chance',color:'#dddd33',dmg:8,dur:0,weight:3},
+  {id:'lightning',name:'Storm Bolt',desc:'+8 DMG, chains to nearby enemies',color:'#dddd33',dmg:8,dur:0,weight:3},
   {id:'earth',name:'Stone Skin',desc:'+2 DMG, +10 DUR',color:'#998855',dmg:2,dur:10,weight:3},
-  {id:'vampiric',name:'Blood Drain',desc:'+3 DMG, heals 25% of damage dealt',color:'#cc2255',dmg:3,dur:0,weight:2},
-  {id:'thorns',name:'Thorns',desc:'+2 DMG, reflects 30% damage back',color:'#669933',dmg:2,dur:2,weight:2},
+  {id:'vampiric',name:'Blood Drain',desc:'+3 DMG, heals 25% dealt',color:'#cc2255',dmg:3,dur:0,weight:2},
+  {id:'thorns',name:'Thorns',desc:'+2 DMG, reflects 30% back',color:'#669933',dmg:2,dur:2,weight:2},
+  {id:'gravity',name:'Gravity Well',desc:'+5 DMG, pulls enemies toward you',color:'#6644aa',dmg:5,dur:2,weight:2},
   // Rare
   {id:'holy',name:'Holy Light',desc:'+5 DMG, +8 DUR, bonus vs undead',color:'#ffeeaa',dmg:5,dur:8,weight:2},
   {id:'shadow',name:'Shadow Strike',desc:'+12 DMG, -4 DUR, crit chance',color:'#443366',dmg:12,dur:-4,weight:2},
-  {id:'berserker',name:'Berserker Rage',desc:'+15 DMG, take 20% more damage',color:'#dd5533',dmg:15,dur:-3,weight:1},
+  {id:'berserker',name:'Berserker Rage',desc:'+15 DMG, take 20% more',color:'#dd5533',dmg:15,dur:-3,weight:1},
+  {id:'frost',name:'Permafrost',desc:'+6 DMG, +6 DUR, freeze chance',color:'#88ddff',dmg:6,dur:6,weight:1.5},
+  {id:'explosive',name:'Blast Core',desc:'+10 DMG, AOE on kill',color:'#ff8822',dmg:10,dur:-2,weight:1.5},
   // Epic
   {id:'arcane',name:'Arcane Blast',desc:'+10 DMG, +5 DUR, magic burst',color:'#9944cc',dmg:10,dur:5,weight:1},
   {id:'necro',name:'Soul Reaper',desc:'+7 DMG, kills restore HP',color:'#334433',dmg:7,dur:0,weight:1},
+  {id:'chaos',name:'Chaos Edge',desc:'+8-20 random DMG per hit',color:'#ff44aa',dmg:14,dur:0,weight:0.8},
+  {id:'timewarp',name:'Time Warp',desc:'+6 DMG, +4 DUR, slows all enemies',color:'#44ddcc',dmg:6,dur:4,weight:0.8},
   // Legendary
   {id:'void',name:'Void Collapse',desc:'+18 DMG, +10 DUR, ultimate power',color:'#110022',dmg:18,dur:10,weight:0.5},
   {id:'celestial',name:'Celestial Blessing',desc:'+12 DMG, +15 DUR, divine',color:'#ffeedd',dmg:12,dur:15,weight:0.5},
-  // Ultra-rare — weight scales with prestige
-  {id:'godforge',name:'Godforge Eternal',desc:'+30 DMG, +25 DUR, ultimate power',color:'#ff44ff',dmg:30,dur:25,weight:0.05,prestige:true}
+  {id:'phoenix',name:'Phoenix Flame',desc:'+14 DMG, auto-revive once',color:'#ff6600',dmg:14,dur:5,weight:0.4},
+  // Ultra-rare
+  {id:'godforge',name:'Godforge Eternal',desc:'+30 DMG, +25 DUR, ultimate',color:'#ff44ff',dmg:30,dur:25,weight:0.05,prestige:true}
 ];
 
 const SPIN_COST = 25;
@@ -2660,7 +2826,9 @@ function refreshInventory(){
     html+='<strong>#'+(i+1)+' '+sw.title+'</strong> ['+sw.grade+', '+sw.score+']'+(sw.enchantment?' <span style="color:#c89b3c;">('+sw.enchantment+')</span>':'')+(sw.quenched?' <span style="color:#4488cc;">quenched</span>':'')+'<br>';
     html+='DMG '+sw.damage+' | DUR '+sw.durability+' | WGT '+sw.weight+'<br>';
     html+=(eq?'<span style="color:#44dd77;">Equipped</span>':'<button class="smallButton" onclick="equipSword('+i+')">Equip</button>');
-    html+=' <button class="smallButton" onclick="previewSword('+i+')" style="background:#556;">View</button></div>';
+    html+=' <button class="smallButton" onclick="previewSword('+i+')" style="background:#556;">View</button>';
+    if(!eq)html+=' <button class="smallButton" onclick="deleteSword('+i+')" style="background:linear-gradient(135deg,#663333,#552222);color:#ffaaaa;">Sell</button>';
+    html+='</div>';
   });
   el.innerHTML=html;
   refreshMaterialDisplay();
@@ -2714,6 +2882,18 @@ window.equipSword=function(i){
   equippedIndex=i;
   refreshInventory();
   refreshBattle();
+  if(typeof saveGame==='function')saveGame();
+};
+
+window.deleteSword=function(i){
+  if(i===equippedIndex)return;
+  const sw=inventory[i];
+  const sellGold=Math.max(5,Math.round(sw.score*0.4));
+  if(!confirm('Sell "'+sw.title+'" for '+sellGold+' gold?'))return;
+  inventory.splice(i,1);
+  if(equippedIndex>i)equippedIndex--;
+  updateGold(sellGold);
+  refreshInventory();
   if(typeof saveGame==='function')saveGame();
 };
 
@@ -4663,12 +4843,21 @@ function genDungeon(floor){
   for(const sr3 of secretRooms){
     chests.push({x:(sr3.x+1)*DTS+DTS/2,y:(sr3.y+1)*DTS+DTS/2,loot:{...loot[Math.floor(Math.random()*loot.length)],rarity:'rare'},opened:false,secret:true});
   }
-  // Boss spawn on boss floors
-  if(typeof isBossFloor==='function'&&isBossFloor(floor)){
-    const boss=spawnBoss(floor,rooms);
-    if(boss)enemies.push(boss);
+  // Boss spawn on boss floors (or every floor in boss rush)
+  const isBR=dungeon.challenge==='bossRush';
+  if((typeof isBossFloor==='function'&&isBossFloor(floor))||isBR){
+    const bossIdx=isBR?[4,9,14,19][Math.min(Math.floor(floor/5),3)]:floor;
+    const bd=DUNGEON_BOSSES[bossIdx];
+    if(bd){
+      const bossRoom=rooms[rooms.length-2]||rooms[rooms.length-1];
+      const bx=Math.floor(bossRoom.x+bossRoom.w/2)*DTS+DTS/2;
+      const by=Math.floor(bossRoom.y+bossRoom.h/2)*DTS+DTS/2;
+      const scaledBoss={...bd,baseHp:Math.round(bd.baseHp*(isBR?0.7+floor*0.1:1)),atk:Math.round(bd.atk*(isBR?0.8+floor*0.05:1))};
+      enemies.push({x:bx,y:by,data:scaledBoss,alive:true,dir:0,moveTimer:0,isBoss:true,abilityTimer:60,chargeTarget:null,charging:false,chargeVX:0,chargeVY:0,aoeTimer:0,summonTimer:0});
+    }
   }
-  const sr=rooms[0];return{map,enemies,chests,puzzles,npcs:typeof spawnNPCs==='function'?spawnNPCs(rooms):[],spawnX:Math.floor(sr.x+sr.w/2)*DTS+DTS/2,spawnY:Math.floor(sr.y+sr.h/2)*DTS+DTS/2};
+  const events=typeof spawnDungeonEvents==='function'?spawnDungeonEvents(rooms,floor):[];
+  const sr=rooms[0];return{map,enemies,chests,puzzles,events,npcs:typeof spawnNPCs==='function'?spawnNPCs(rooms):[],spawnX:Math.floor(sr.x+sr.w/2)*DTS+DTS/2,spawnY:Math.floor(sr.y+sr.h/2)*DTS+DTS/2};
 }
 function dSolid(px2,py2){const tx=Math.floor(px2/DTS),ty=Math.floor(py2/DTS);if(tx<0||tx>=DW||ty<0||ty>=DH)return true;const t=dungeon.map[ty][tx];return t===DT.WALL||t===DT.SECRET;}
 function updateDungeonHp(){document.getElementById('dPlayerHp').textContent=Math.max(0,dungeon.hp)+'/'+dungeon.maxHp+' | MP:'+Math.floor(playerMana);document.getElementById('dLootCount').textContent=dungeon.loot.length;}
@@ -4688,12 +4877,17 @@ function dungeonTick(){
   if(dodgeTimer>0){const nx2=dungeon.px+dodgeVX,ny2=dungeon.py+dodgeVY;if(!dSolid(nx2-pb,ny2-pb)&&!dSolid(nx2+pb,ny2-pb)&&!dSolid(nx2-pb,ny2+pb)&&!dSolid(nx2+pb,ny2+pb)){dungeon.px=nx2;dungeon.py=ny2;}dodgeTimer--;}
   if(dodgeCooldown>0)dodgeCooldown--;
   dReveal();
-  // Mana regen while moving
+  // Mana regen while moving (Mage gets 2x)
   const manaRegenMult=typeof getSkillValue==='function'?getSkillValue('manaRegenMult',1):1;
-  if((dx||dy)&&playerMana<playerMaxMana){playerMana=Math.min(playerMaxMana,playerMana+0.3*manaRegenMult);}
+  const classManaRegen=typeof getClassId==='function'&&getClassId()==='mage'?2:1;
+  if((dx||dy)&&playerMana<playerMaxMana){playerMana=Math.min(playerMaxMana,playerMana+0.3*manaRegenMult*classManaRegen);}
+  // Mana also regens slowly while standing still (Mage perk)
+  if(classManaRegen>1&&playerMana<playerMaxMana){playerMana=Math.min(playerMaxMana,playerMana+0.1);}
   // HP regen from skill
   const regenRate=typeof getSkillValue==='function'?getSkillValue('regenRate',0):0;
   if(regenRate>0&&dungeon.hp<dungeon.maxHp){dungeon.hp=Math.min(dungeon.maxHp,dungeon.hp+regenRate/90);}
+  // Paladin passive heal (1 HP/sec)
+  if(typeof getPlayerClass==='function'&&getPlayerClass().passiveHeal&&dungeon.hp<dungeon.maxHp){dungeon.hp=Math.min(dungeon.maxHp,dungeon.hp+1/30);}
   // Poison tick from modifier
   if(dungeon.modifier&&dungeon.modifier.effect.poisonTick){if(!dungeon._poisonTick)dungeon._poisonTick=0;dungeon._poisonTick++;if(dungeon._poisonTick>=30){dungeon._poisonTick=0;dungeon.hp--;spawnFloatingNumber(dungeon.px,dungeon.py-15,'-1','#66cc33');updateDungeonHp();if(dungeon.hp<=0){endDungeon(false);return;}}}
   // Trap check
@@ -4718,12 +4912,30 @@ function dungeonTick(){
   const chaseSpeed=1.2*modSpeedMult;
   const sc=1+dungeon.floor*0.15;
   const modDefMult=dungeon.modifier&&dungeon.modifier.effect.defMult?dungeon.modifier.effect.defMult:1;
+  // Time stop countdown
+  if(dungeon._timeStop>0)dungeon._timeStop--;
+  // Ally wolf AI
+  if(dungeon.allies){for(const ally of dungeon.allies){if(!ally.alive)continue;
+    let nearE=null,nearD=Infinity;
+    for(const e of dungeon.enemies){if(!e.alive)continue;const d=Math.sqrt((ally.x-e.x)**2+(ally.y-e.y)**2);if(d<nearD){nearD=d;nearE=e;}}
+    if(nearE&&nearD<80){const ang=Math.atan2(nearE.y-ally.y,nearE.x-ally.x);ally.x+=Math.cos(ang)*2;ally.y+=Math.sin(ang)*2;
+      if(nearD<14){ally.atkTimer--;if(ally.atkTimer<=0){ally.atkTimer=15;nearE.curHp-=ally.dmg;spawnFloatingNumber(nearE.x,nearE.y-10,'-'+ally.dmg,'#88aacc');
+        if(nearE.curHp<=0){nearE.alive=false;spawnDungeonParticle(nearE.x,nearE.y,nearE.data.color||'#cc3333',10,5);spawnDungeonParticle(nearE.x,nearE.y,'#ffffff',5,3);recordEnemy(nearE.data.name,nearE.data);trackKill();}}}
+    }else{const ang2=Math.atan2(dungeon.py-ally.y,dungeon.px-ally.x);ally.x+=Math.cos(ang2)*1.5;ally.y+=Math.sin(ang2)*1.5;}
+  }}
   for(const e of dungeon.enemies){
     if(!e.alive)continue;
+    // Skip enemy AI if time stop active
+    if(dungeon._timeStop>0&&!e.isBoss){continue;}
     // Init enemy HP if not set
     if(!e.curHp)e.curHp=Math.round(e.data.baseHp*sc);
     if(!e.maxHp)e.maxHp=e.curHp;
     if(!e.atkTimer)e.atkTimer=0;
+    // Status effects tick
+    if(e.poisoned>0){e.poisoned--;if(e.poisoned%15===0){e.curHp-=2;spawnFloatingNumber(e.x,e.y-10,'-2','#44bb33');if(e.curHp<=0){e.alive=false;spawnDungeonParticle(e.x,e.y,'#44bb33',8,4);recordEnemy(e.data.name,e.data);trackKill();continue;}}}
+    if(e.bleeding>0){e.bleeding--;if(e.bleeding%20===0){e.curHp-=3;spawnFloatingNumber(e.x,e.y-10,'-3','#cc3344');if(e.curHp<=0){e.alive=false;spawnDungeonParticle(e.x,e.y,'#cc3344',8,4);recordEnemy(e.data.name,e.data);trackKill();continue;}}}
+    if(e.slowed>0)e.slowed--;
+    const enemySpeedMult=e.slowed>0?0.4:1;
     const distToPlayer=Math.sqrt((dungeon.px-e.x)**2+(dungeon.py-e.y)**2);
 
     // Boss AI
@@ -4816,7 +5028,7 @@ function dungeonTick(){
     if(distToPlayer<aggroRange){
       // Chase player
       const ang=Math.atan2(dungeon.py-e.y,dungeon.px-e.x);
-      const emx=e.x+Math.cos(ang)*chaseSpeed,emy=e.y+Math.sin(ang)*chaseSpeed;
+      const emx=e.x+Math.cos(ang)*chaseSpeed*enemySpeedMult,emy=e.y+Math.sin(ang)*chaseSpeed*enemySpeedMult;
       if(!dSolid(emx,emy)){e.x=emx;e.y=emy;}
       // Enemy attacks on contact
       if(distToPlayer<contactRange){
@@ -4850,17 +5062,52 @@ function dungeonTick(){
   // Attack on Space press — deal damage to nearest enemy
   if(dKeys.attack&&dungeon.swingTimer<=0){
     dungeon.swingTimer=10;
+    if(typeof playSFX==='function')playSFX('swing');
     if(dungeon.nearEnemy){
       const e=dungeon.nearEnemy.enemy;
       const sw=inventory[equippedIndex];if(!sw)return;
       let pd=Math.max(1,sw.damage-Math.round(e.data.def*sc*modDefMult)+Math.floor(Math.random()*4)-1);
       if(typeof getSkillValue==='function'){pd=Math.round(pd*getSkillValue('dmgMult',1));const cc=getSkillValue('critChance',0);if(Math.random()<cc){pd=Math.round(pd*1.8);spawnDungeonParticle(e.x,e.y-10,'#ffdd44',6,4);spawnFloatingNumber(e.x,e.y-20,'CRIT!','#ffdd44');}}
       if(berserkCounter>0)pd=pd*2;
+      if(dungeon.challenge==='glass')pd=pd*5;
+      if(typeof ascensionTier!=='undefined'&&ascensionTier>0)pd=Math.round(pd*getAscensionBonuses(ascensionTier).dmgMult);
+      // Class damage bonus
+      const cl2=typeof getPlayerClass==='function'?getPlayerClass():{dmgMult:1,critBonus:0};
+      pd=Math.round(pd*cl2.dmgMult);
+      // Event damage buff
+      if(dungeon._eventDmgBuff>1)pd=Math.round(pd*dungeon._eventDmgBuff);
+      pd+=(dungeon._eventDmgFlat||0);
+      // Rogue crit bonus
+      if(cl2.critBonus>0&&Math.random()<cl2.critBonus){pd=Math.round(pd*1.6);spawnFloatingNumber(e.x,e.y-25,'CRIT!','#ffdd44');}
+      // Paladin: holy smite every 5th hit
+      if(typeof getClassId==='function'&&getClassId()==='paladin'){dungeon._paladinHitCount=(dungeon._paladinHitCount||0)+1;if(dungeon._paladinHitCount%5===0){pd+=15;spawnDungeonParticle(e.x,e.y,'#ffeeaa',6,3);spawnFloatingNumber(e.x,e.y-30,'+15 Holy','#ffeeaa');}}
       // Combo multiplier
       if(typeof getComboMult==='function'){const cm=getComboMult();if(cm>1)pd=Math.round(pd*cm);}
       if(typeof addCombo==='function')addCombo();
       e.curHp-=pd;
+      if(typeof playSFX==='function')playSFX('hit','C2','16n');
       spawnFloatingNumber(e.x+Math.random()*10-5,e.y-15,'-'+pd,'#ff6644');
+      // Enchantment effects on hit
+      if(sw.enchantment){
+        const eid=sw.enchantment;
+        if(eid==='fire'){spawnDungeonParticle(e.x,e.y,'#ff4422',6,4);spawnDungeonParticle(e.x,e.y,'#ffaa22',4,3);}
+        else if(eid==='ice'||eid==='frost'){spawnDungeonParticle(e.x,e.y,'#88ddff',6,3);if(!e.slowed){e.slowed=60;}}// slow for 2s
+        else if(eid==='lightning'){spawnDungeonParticle(e.x,e.y,'#ffff44',8,5);
+          // Chain to nearby enemy
+          for(const e2 of dungeon.enemies){if(e2===e||!e2.alive)continue;const cd=Math.sqrt((e.x-e2.x)**2+(e.y-e2.y)**2);if(cd<50){const chainDmg=Math.round(pd*0.4);e2.curHp-=chainDmg;spawnFloatingNumber(e2.x,e2.y-10,'-'+chainDmg,'#ffff44');spawnDungeonParticle(e2.x,e2.y,'#ffff44',4,3);if(e2.curHp<=0){e2.alive=false;spawnDungeonParticle(e2.x,e2.y,e2.data.color||'#cc3333',10,5);recordEnemy(e2.data.name,e2.data);trackKill();}break;}}
+        }
+        else if(eid==='poison'){spawnDungeonParticle(e.x,e.y,'#44bb33',5,2);if(!e.poisoned)e.poisoned=90;}// poison 3s
+        else if(eid==='wind'){const pushAng=Math.atan2(e.y-dungeon.py,e.x-dungeon.px);const nx=e.x+Math.cos(pushAng)*20,ny=e.y+Math.sin(pushAng)*20;if(!dSolid(nx,ny)){e.x=nx;e.y=ny;}spawnDungeonParticle(e.x,e.y,'#88ccaa',6,4);}
+        else if(eid==='shadow'){spawnDungeonParticle(e.x,e.y,'#443366',6,3);}
+        else if(eid==='holy'){spawnDungeonParticle(e.x,e.y,'#ffeeaa',8,3);}
+        else if(eid==='explosive'&&e.curHp<=0){for(const e2 of dungeon.enemies){if(e2===e||!e2.alive)continue;const cd=Math.sqrt((e.x-e2.x)**2+(e.y-e2.y)**2);if(cd<40){e2.curHp-=Math.round(pd*0.5);spawnDungeonParticle(e2.x,e2.y,'#ff8822',6,4);if(e2.curHp<=0){e2.alive=false;spawnDungeonParticle(e2.x,e2.y,'#ff4444',8,5);recordEnemy(e2.data.name,e2.data);trackKill();}}}}
+        else if(eid==='bleed'){if(!e.bleeding)e.bleeding=60;spawnDungeonParticle(e.x,e.y,'#cc3344',4,2);}
+        else if(eid==='gravity'){for(const e2 of dungeon.enemies){if(e2===e||!e2.alive)continue;const cd=Math.sqrt((e.x-e2.x)**2+(e.y-e2.y)**2);if(cd<50){const ga=Math.atan2(dungeon.py-e2.y,dungeon.px-e2.x);e2.x+=Math.cos(ga)*8;e2.y+=Math.sin(ga)*8;}}spawnDungeonParticle(e.x,e.y,'#6644aa',6,3);}
+        else if(eid==='arcane'){spawnDungeonParticle(e.x,e.y,'#9944cc',8,4);}
+        else if(eid==='necro'&&e.curHp<=0){const nh=Math.round(pd*0.3);dungeon.hp=Math.min(dungeon.maxHp,dungeon.hp+nh);spawnFloatingNumber(dungeon.px,dungeon.py-20,'+'+nh+' HP','#44dd77');}
+        else if(eid==='chaos'){const extra=Math.floor(Math.random()*12);e.curHp-=extra;spawnFloatingNumber(e.x,e.y-25,'-'+extra,'#ff44aa');}
+        else if(eid==='phoenix'&&dungeon.hp<=0&&!dungeon._phoenixUsed){dungeon._phoenixUsed=true;dungeon.hp=Math.round(dungeon.maxHp*0.4);spawnDungeonParticle(dungeon.px,dungeon.py,'#ff6600',20,6);addDungeonLog('🔥 Phoenix Flame revives you!');}
+      }
       if(e.curHp<=0){
         e.alive=false;
         // Death explosion particles — burst of enemy color + red + white
@@ -4870,41 +5117,48 @@ function dungeonTick(){
         spawnDungeonParticle(e.x,e.y,'#ffffff',5,3);
         if(e.isBoss){spawnDungeonParticle(e.x,e.y,'#ffdd44',20,7);spawnDungeonParticle(e.x,e.y,ec,15,6);}
         recordEnemy(e.data.name,e.data);trackKill();
-        if(typeof addXP==='function')addXP(5+dungeon.floor*2);
+        if(typeof addXP==='function'){const chXPm=typeof getChallengeXPMult==='function'?getChallengeXPMult():1;addXP(Math.round((5+dungeon.floor*2)*chXPm));}
         if(berserkCounter>0)berserkCounter--;
         if(thornsCounter>0)thornsCounter--;
         const modGoldMult=dungeon.modifier&&dungeon.modifier.effect.goldMult?dungeon.modifier.effect.goldMult:1;
-        const g=Math.round((e.data.goldMin+Math.floor(Math.random()*(e.data.goldMax-e.data.goldMin+1)))*0.6*modGoldMult);
+        const chGoldMult=typeof getChallengeGoldMult==='function'?getChallengeGoldMult():1;
+        const g=Math.round((e.data.goldMin+Math.floor(Math.random()*(e.data.goldMax-e.data.goldMin+1)))*0.6*modGoldMult*chGoldMult);
         updateGold(g);
         spawnFloatingNumber(e.x,e.y-5,'+'+g+'g','#ffdd44');
         addDungeonLog('Killed '+e.data.name+'! +'+g+'g');
         if(e.isBoss){addDungeonLog('👑 BOSS DEFEATED! Massive bonus!');if(typeof addXP==='function')addXP(100+dungeon.floor*20);spawnDungeonParticle(e.x,e.y,'#ffdd44',20,6);spawnDungeonParticle(e.x,e.y,'#ff4444',15,5);}
         if(sw.enchantment==='vampiric'){const h=Math.round(pd*0.2);dungeon.hp=Math.min(dungeon.maxHp,dungeon.hp+h);}
+        // Warrior on-kill heal
+        if(typeof getPlayerClass==='function'){const cl3=getPlayerClass();if(cl3.onKillHeal>0){dungeon.hp=Math.min(dungeon.maxHp,dungeon.hp+cl3.onKillHeal);}}
       }
       updateDungeonHp();dungeon.nearEnemy=null;
     }
   }
   dKeys.attack=false;
   if(dungeon.swingTimer>0)dungeon.swingTimer--;
-  for(const c of dungeon.chests){if(c.opened)continue;if(Math.abs(dungeon.px-c.x)<12&&Math.abs(dungeon.py-c.y)<12){c.opened=true;if(c.loot.type==='gold'){updateGold(c.loot.amount);addDungeonLog('Found: '+(c.loot.desc||'+gold'));}else{dungeon.loot.push({...c.loot});addMaterial(c.loot.name,1);addDungeonLog('Found: '+c.loot.name);updateDungeonLootDisplay();}updateDungeonHp();}}
+  for(const c of dungeon.chests){if(c.opened)continue;if(Math.abs(dungeon.px-c.x)<12&&Math.abs(dungeon.py-c.y)<12){c.opened=true;if(typeof playSFX==='function')playSFX('chest','E4','8n');if(c.loot.type==='gold'){updateGold(c.loot.amount);addDungeonLog('Found: '+(c.loot.desc||'+gold'));}else{dungeon.loot.push({...c.loot});addMaterial(c.loot.name,1);addDungeonLog('Found: '+c.loot.name);updateDungeonLootDisplay();}updateDungeonHp();}}
   // NPC interaction
   if(dungeon.npcs){for(const npc of dungeon.npcs){if(npc.used)continue;if(Math.abs(dungeon.px-npc.x)<16&&Math.abs(dungeon.py-npc.y)<16){npc.used=true;if(npc.type==='merchant'){const bonus=10+dungeon.floor*5;updateGold(bonus);addDungeonLog('🧙 Merchant: "Here, take '+bonus+' gold, adventurer!"');spawnDungeonParticle(npc.x,npc.y,'#ffdd44',8,2);}else if(npc.type==='healer'){const heal=Math.round(dungeon.maxHp*0.35);dungeon.hp=Math.min(dungeon.maxHp,dungeon.hp+heal);addDungeonLog('💚 Healer: "Be healed!" +'+heal+' HP');spawnDungeonParticle(npc.x,npc.y,'#44dd77',10,2);updateDungeonHp();}}}}
+  // Dungeon event interaction
+  if(dungeon.events){for(const ev of dungeon.events){if(!ev.active)continue;if(Math.abs(dungeon.px-ev.x)<16&&Math.abs(dungeon.py-ev.y)<16){triggerEvent(ev);}}}
   const ptx=Math.floor(dungeon.px/DTS),pty=Math.floor(dungeon.py/DTS);
   const isEndless=document.getElementById('endlessModeToggle')&&document.getElementById('endlessModeToggle').checked;
   if(ptx>=0&&ptx<DW&&pty>=0&&pty<DH&&dungeon.map[pty][ptx]===DT.STAIRS&&dKeys.down){
     if(dungeon.floor<19||isEndless){
-      dungeon.floor++;loadFloor(dungeon.floor);
+      dungeon.floor++;dungeon._floorTimer=0;loadFloor(dungeon.floor);
       if(typeof checkDungeonCheckpoint==='function')checkDungeonCheckpoint();
       const themeName=FLOOR_THEMES[Math.min(dungeon.floor,FLOOR_THEMES.length-1)].name;
       if(dungeon.floor>=20){addDungeonLog('⚡ ENDLESS Floor '+(dungeon.floor+1)+' — '+getEndlessFloorName(dungeon.floor));}
       else{addDungeonLog('Floor '+(dungeon.floor+1)+': '+themeName);}
-      if(typeof isBossFloor==='function'&&isBossFloor(dungeon.floor)){const bd=DUNGEON_BOSSES[dungeon.floor];addDungeonLog('👑 BOSS: '+bd.name+' — '+bd.desc);}
+      if(typeof isBossFloor==='function'&&isBossFloor(dungeon.floor)){const bd=DUNGEON_BOSSES[dungeon.floor];addDungeonLog('👑 BOSS: '+bd.name+' — '+bd.desc);if(typeof playSFX==='function')playSFX('boss','C2','4n');}
       const heal=Math.round(dungeon.maxHp*0.2);dungeon.hp=Math.min(dungeon.maxHp,dungeon.hp+heal);addDungeonLog('Healed '+heal+' HP.');updateDungeonHp();
     }else{addDungeonLog('Dungeon complete!');endDungeon(true);return;}
   }
   const cvs=document.getElementById('dungeonCanvas');dungeon.camX=dungeon.px-cvs.width/2;dungeon.camY=dungeon.py-cvs.height/2;
   dungeon.camX=Math.max(0,Math.min(DW*DTS-cvs.width,dungeon.camX));dungeon.camY=Math.max(0,Math.min(DH*DTS-cvs.height,dungeon.camY));
   if(typeof tickCombo==='function')tickCombo();
+  // Speed run timer
+  if(dungeon.challenge==='speedrun'){dungeon._floorTimer=(dungeon._floorTimer||0)+1;if(dungeon._floorTimer>=1800){addDungeonLog('⏱️ Time\'s up!');endDungeon(false);return;}}
   drawDungeon();drawMinimap();if(dungeon.hp<=0)endDungeon(false);
 }
 
@@ -5050,6 +5304,18 @@ function drawDungeon(){
       ctx.restore();
     }
   }
+  // Dungeon Events
+  if(dungeon.events){for(const ev of dungeon.events){if(!ev.active)continue;
+    const evx=ev.x-dungeon.camX,evy=ev.y-dungeon.camY;if(evx<-20||evx>W+20)continue;
+    const evBob=Math.sin(Date.now()*0.004)*2;
+    // Glowing circle
+    ctx.save();ctx.globalAlpha=0.2+Math.sin(Date.now()*0.005)*0.1;
+    ctx.fillStyle='#cc88ff';ctx.beginPath();ctx.arc(evx,evy,12,0,Math.PI*2);ctx.fill();ctx.restore();
+    // Icon
+    ctx.fillStyle='#fff';ctx.font='12px Arial';ctx.textAlign='center';ctx.fillText(ev.icon,evx,evy+4+evBob);
+    // Label
+    ctx.fillStyle='#cc88ff';ctx.font='bold 7px Inter, Arial';ctx.fillText(ev.name,evx,evy-14+evBob);
+  }}
   // NPCs
   if(dungeon.npcs){for(const npc of dungeon.npcs){
     const nx=npc.x-dungeon.camX,ny=npc.y-dungeon.camY;if(nx<-20||nx>W+20)continue;
@@ -5092,20 +5358,44 @@ function drawDungeon(){
     if(swinging){ctx.save();ctx.globalAlpha=0.3;ctx.strokeStyle=mc3;ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,12,-1.5+swingAngle,-0.2+swingAngle);ctx.stroke();ctx.restore();}
     ctx.restore();
   }
+  // Player title above head
+  if(typeof activeTitle!=='undefined'&&activeTitle){
+    const at=typeof TITLES!=='undefined'?TITLES.find(t=>t.id===activeTitle):null;
+    if(at){ctx.fillStyle=at.color;ctx.font='bold 7px Inter, Arial';ctx.textAlign='center';ctx.fillText(at.name,ppx,ppy-24+bob);}
+  }
   // HUD — Health bar top-right
   const hpPct=Math.max(0,dungeon.hp/dungeon.maxHp);
   const hbW=80,hbH=10,hbX=W-hbW-10,hbY=10;
-  ctx.fillStyle='#0008';ctx.fillRect(hbX-2,hbY-2,hbW+4,hbH+14);
+  ctx.fillStyle='#0008';ctx.fillRect(hbX-2,hbY-2,hbW+4,hbH+30);
   ctx.fillStyle='#333';ctx.fillRect(hbX,hbY,hbW,hbH);
   ctx.fillStyle=hpPct>0.5?'#44dd77':hpPct>0.25?'#ddaa33':'#dd3333';
   ctx.fillRect(hbX,hbY,hbW*hpPct,hbH);
   ctx.strokeStyle='#555';ctx.lineWidth=1;ctx.strokeRect(hbX,hbY,hbW,hbH);
+  // Mana bar
+  const mpPct=Math.max(0,playerMana/playerMaxMana);
+  const mbY=hbY+hbH+2;
+  ctx.fillStyle='#333';ctx.fillRect(hbX,mbY,hbW,6);
+  ctx.fillStyle='#4488ff';ctx.fillRect(hbX,mbY,hbW*mpPct,6);
+  ctx.strokeStyle='#555';ctx.lineWidth=0.5;ctx.strokeRect(hbX,mbY,hbW,6);
   ctx.fillStyle='#fff';ctx.font='bold 8px Arial';ctx.textAlign='center';
-  ctx.fillText(Math.max(0,dungeon.hp)+'/'+dungeon.maxHp,hbX+hbW/2,hbY+hbH+10);
+  ctx.fillText(Math.max(0,Math.floor(dungeon.hp))+'/'+dungeon.maxHp+'  MP:'+Math.floor(playerMana),hbX+hbW/2,mbY+16);
+  // Floor indicator top-left
+  ctx.fillStyle='#0008';ctx.fillRect(6,6,60,16);
+  ctx.fillStyle='#c89b3c';ctx.font='bold 9px Inter, Arial';ctx.textAlign='left';
+  ctx.fillText('Floor '+(dungeon.floor+1),10,18);
   // Draw particles
   drawDungeonParticles(ctx);
   // Draw floating damage numbers
   drawFloatingNumbers(ctx);
+  // Draw ally wolves
+  if(dungeon.allies){for(const ally of dungeon.allies){if(!ally.alive)continue;const ax=ally.x-dungeon.camX,ay=ally.y-dungeon.camY;
+    ctx.fillStyle='#88aacc';ctx.beginPath();ctx.ellipse(ax,ay-3,6,4,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(ax+4,ay-6,3,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#aaccee';ctx.beginPath();ctx.arc(ax+5,ay-6.5,1,0,Math.PI*2);ctx.fill();
+  }}
+  // Time stop visual overlay
+  if(dungeon._timeStop>0){ctx.save();ctx.globalAlpha=0.1;ctx.fillStyle='#44ddcc';ctx.fillRect(0,0,W,H);ctx.restore();}
+  // Speed run timer
+  if(dungeon.challenge==='speedrun'){const remain=Math.max(0,Math.ceil((1800-(dungeon._floorTimer||0))/30));ctx.save();ctx.fillStyle=remain<10?'#ff3333':'#ffdd44';ctx.font='bold 12px Inter, Arial';ctx.textAlign='center';ctx.fillText('⏱ '+remain+'s',W/2,H-8);ctx.restore();}
   // Combo display
   if(typeof comboCount!=='undefined'&&comboCount>=2){
     const cm=typeof getComboMult==='function'?getComboMult():1;
@@ -5150,9 +5440,12 @@ function drawMinimap(){const canvas=document.getElementById('minimapCanvas');if(
   ctx.fillStyle='#44ff77';ctx.fillRect(dungeon.px/DTS*sx2-2,dungeon.py/DTS*sy2-2,4,4);
 }
 
-function refreshDungeon(){const need=document.getElementById('dungeonNeedSword'),ui=document.getElementById('dungeonUI'),btn=document.getElementById('enterDungeonBtn');if(equippedIndex<0||!inventory[equippedIndex]){need.style.display='block';ui.style.display='none';btn.style.display='block';return;}need.style.display='none';if(dungeon.active){ui.style.display='block';btn.style.display='none';drawDungeon();drawMinimap();}else{ui.style.display='none';btn.style.display='block';}}
-function startDungeon(){if(equippedIndex<0||!inventory[equippedIndex])return;const sw=inventory[equippedIndex];dungeon.floor=0;const bonusHp=typeof getSkillValue==='function'?getSkillValue('bonusHp',0):0;dungeon.maxHp=50+sw.durability*2+getTotalArmorStats().hp+bonusHp;dungeon.hp=dungeon.maxHp;dungeon.loot=[];dungeon.active=true;dungeon.facing='down';dungeon.walkFrame=0;const bonusMana=typeof getSkillValue==='function'?getSkillValue('bonusMana',0):0;playerMaxMana=100+bonusMana;playerMana=playerMaxMana;dungeonShield=0;berserkCounter=0;thornsCounter=0;dungeon._hasRevive=false;if(typeof gameStats!=='undefined')gameStats.dungeonsAttempted++;loadFloor(0);document.getElementById('dungeonLog').textContent='You enter the '+FLOOR_THEMES[0].name+'...\n';refreshDungeon();if(dungeon.gameLoop)clearInterval(dungeon.gameLoop);dungeon.gameLoop=setInterval(dungeonTick,1000/30);}
-function loadFloor(floor){dungeon.floor=floor;const gen=genDungeon(floor);dungeon.map=gen.map;dungeon.enemies=gen.enemies;dungeon.chests=gen.chests;dungeon.npcs=gen.npcs||[];dungeon.puzzles=gen.puzzles||[];dungeon.px=gen.spawnX;dungeon.py=gen.spawnY;
+function refreshDungeon(){const need=document.getElementById('dungeonNeedSword'),ui=document.getElementById('dungeonUI'),btn=document.getElementById('enterDungeonBtn'),eqInfo=document.getElementById('dungeonEquipInfo');if(equippedIndex<0||!inventory[equippedIndex]){need.style.display='block';ui.style.display='none';btn.style.display='block';if(eqInfo)eqInfo.textContent='No sword equipped.';return;}need.style.display='none';
+  const sw=inventory[equippedIndex];const cl=typeof getPlayerClass==='function'?getPlayerClass():{name:'Warrior',icon:'⚔️'};
+  if(eqInfo)eqInfo.innerHTML='<span style="color:#c89b3c;">'+sw.title+'</span> ['+sw.grade+'] DMG:'+sw.damage+' DUR:'+sw.durability+(sw.enchantment?' <span style="color:#cc88ff;">('+sw.enchantment+')</span>':'')+' | Class: <span style="color:#cc88ff;">'+cl.icon+' '+cl.name+'</span>';
+  if(dungeon.active){ui.style.display='block';btn.style.display='none';drawDungeon();drawMinimap();}else{ui.style.display='none';btn.style.display='block';}}
+function startDungeon(){if(equippedIndex<0||!inventory[equippedIndex])return;const sw=inventory[equippedIndex];dungeon.floor=0;const bonusHp=typeof getSkillValue==='function'?getSkillValue('bonusHp',0):0;const ascHpMult=typeof getAscensionBonuses==='function'&&ascensionTier>0?getAscensionBonuses(ascensionTier).hpMult:1;const cl=typeof getPlayerClass==='function'?getPlayerClass():{hpMult:1,manaMult:1};dungeon.maxHp=Math.round((50+sw.durability*2+getTotalArmorStats().hp+bonusHp)*ascHpMult*cl.hpMult);dungeon.hp=dungeon.maxHp;dungeon.loot=[];dungeon.active=true;dungeon.facing='down';dungeon.walkFrame=0;dungeon.allies=[];dungeon._phoenixUsed=false;dungeon._eventDmgBuff=1;dungeon._eventDmgFlat=0;dungeon._eventGoldBuff=1;dungeon._paladinHitCount=0;const bonusMana=typeof getSkillValue==='function'?getSkillValue('bonusMana',0):0;playerMaxMana=Math.round((100+bonusMana)*cl.manaMult);playerMana=playerMaxMana;dungeonShield=0;berserkCounter=0;thornsCounter=0;dungeon._hasRevive=false;dungeon._timeStop=0;if(typeof gameStats!=='undefined')gameStats.dungeonsAttempted++;if(typeof applyChallengeStart==='function')applyChallengeStart();loadFloor(0);const clId=typeof getClassId==='function'?getClassId():'warrior';document.getElementById('dungeonLog').textContent=cl.icon||'⚔️'+' '+CLASSES[clId].name+' enters the '+FLOOR_THEMES[0].name+'...\n';refreshDungeon();if(dungeon.gameLoop)clearInterval(dungeon.gameLoop);dungeon.gameLoop=setInterval(dungeonTick,1000/30);}
+function loadFloor(floor){dungeon.floor=floor;const gen=genDungeon(floor);dungeon.map=gen.map;dungeon.enemies=gen.enemies;dungeon.chests=gen.chests;dungeon.npcs=gen.npcs||[];dungeon.puzzles=gen.puzzles||[];dungeon.events=gen.events||[];dungeon.px=gen.spawnX;dungeon.py=gen.spawnY;
   dungeon.explored=[];for(let y=0;y<DH;y++){dungeon.explored[y]=[];for(let x=0;x<DW;x++)dungeon.explored[y][x]=false;}
   document.getElementById('dFloorNum').textContent=(floor+1);
   if(dungeon.modifier&&dungeon.modifier.id!=='normal')addDungeonLog('⚠️ '+dungeon.modifier.name+': '+dungeon.modifier.desc);
@@ -5161,7 +5454,7 @@ function dReveal(){const r=4;const ptx=Math.floor(dungeon.px/DTS),pty=Math.floor
 function endDungeon(success){
   // Check for Second Wind revive
   if(!success&&dungeon._hasRevive){dungeon._hasRevive=false;dungeon.hp=Math.round(dungeon.maxHp*0.5);addDungeonLog('🌟 Second Wind! Revived at 50% HP!');updateDungeonHp();return;}
-  dungeon.active=false;if(dungeon.gameLoop){clearInterval(dungeon.gameLoop);dungeon.gameLoop=null;}if(typeof gameStats!=='undefined'){if(dungeon.floor+1>gameStats.highestFloor)gameStats.highestFloor=dungeon.floor+1;}if(dungeon.floor>endlessRecord)endlessRecord=dungeon.floor;if(typeof refreshEndlessRecord==='function')refreshEndlessRecord();if(success){if(typeof gameStats!=='undefined'){gameStats.dungeonsCompleted++;gameStats.floorsCleared+=dungeon.floor+1;}if(typeof addXP==='function')addXP(50+dungeon.floor*15);addDungeonLog('=== DUNGEON COMPLETE ===\nLoot: '+dungeon.loot.length+' items');const bonus=15+dungeon.floor*10;updateGold(bonus);addDungeonLog('Bonus: +'+bonus+' gold!');}else{if(typeof gameStats!=='undefined'){gameStats.deaths++;gameStats.floorsCleared+=dungeon.floor;}addDungeonLog('=== YOU DIED ===');inventory.splice(equippedIndex,1);equippedIndex=-1;dungeon.loot=dungeon.loot.slice(0,Math.ceil(dungeon.loot.length/2));addDungeonLog('Lost your sword. Salvaged '+dungeon.loot.length+' items.');}updateDungeonLootDisplay();document.getElementById('enterDungeonBtn').style.display='block';if(typeof saveGame==='function')saveGame();}
+  dungeon.active=false;if(dungeon.gameLoop){clearInterval(dungeon.gameLoop);dungeon.gameLoop=null;}if(!success&&typeof playSFX==='function')playSFX('death','C1','4n');if(typeof gameStats!=='undefined'){if(dungeon.floor+1>gameStats.highestFloor)gameStats.highestFloor=dungeon.floor+1;}if(dungeon.floor>endlessRecord)endlessRecord=dungeon.floor;if(typeof refreshEndlessRecord==='function')refreshEndlessRecord();if(success){if(typeof gameStats!=='undefined'){gameStats.dungeonsCompleted++;gameStats.floorsCleared+=dungeon.floor+1;}if(typeof addXP==='function')addXP(50+dungeon.floor*15);addDungeonLog('=== DUNGEON COMPLETE ===\nLoot: '+dungeon.loot.length+' items');const bonus=15+dungeon.floor*10;updateGold(bonus);addDungeonLog('Bonus: +'+bonus+' gold!');}else{if(typeof gameStats!=='undefined'){gameStats.deaths++;gameStats.floorsCleared+=dungeon.floor;}addDungeonLog('=== YOU DIED ===');inventory.splice(equippedIndex,1);equippedIndex=-1;dungeon.loot=dungeon.loot.slice(0,Math.ceil(dungeon.loot.length/2));addDungeonLog('Lost your sword. Salvaged '+dungeon.loot.length+' items.');}updateDungeonLootDisplay();document.getElementById('enterDungeonBtn').style.display='block';if(typeof saveGame==='function')saveGame();}
 
 document.addEventListener('keydown',(e)=>{if(!dungeon.active)return;const dt=document.getElementById('tab-dungeon');if(!dt||!dt.classList.contains('active'))return;if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A'){e.preventDefault();dKeys.left=true;}if(e.key==='ArrowRight'||e.key==='d'||e.key==='D'){e.preventDefault();dKeys.right=true;}if(e.key==='ArrowUp'||e.key==='w'||e.key==='W'){e.preventDefault();dKeys.up=true;}if(e.key==='ArrowDown'||e.key==='s'||e.key==='S'){e.preventDefault();dKeys.down=true;}if(e.key===' '){e.preventDefault();dKeys.attack=true;}if(e.key>='1'&&e.key<='4'){e.preventDefault();useAbility(parseInt(e.key)-1);}checkDodge(e.key);});
 document.addEventListener('keyup',(e)=>{if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A')dKeys.left=false;if(e.key==='ArrowRight'||e.key==='d'||e.key==='D')dKeys.right=false;if(e.key==='ArrowUp'||e.key==='w'||e.key==='W')dKeys.up=false;if(e.key==='ArrowDown'||e.key==='s'||e.key==='S')dKeys.down=false;if(e.key===' ')dKeys.attack=false;});
@@ -5228,7 +5521,13 @@ const ABILITIES = [
   { id: 'thorns', name: 'Thorn Armor', desc: 'Reflect 50% damage for 3 fights', icon: '🌹', manaCost: 30, cooldown: 0, type: 'buff', color: '#44aa44', unlockCost: 90 },
   { id: 'smite', name: 'Holy Smite', desc: 'Deal 60 DMG to undead, 30 to others', icon: '☀️', manaCost: 40, cooldown: 0, dmg: 60, type: 'attack', color: '#ffeeaa', unlockCost: 110 },
   { id: 'dash', name: 'Shadow Dash', desc: 'Dodge next enemy attack', icon: '💨', manaCost: 15, cooldown: 0, type: 'dodge', color: '#666688', unlockCost: 55 },
-  { id: 'revive', name: 'Second Wind', desc: 'Auto-revive once if you die (50% HP)', icon: '🌟', manaCost: 60, cooldown: 0, type: 'revive', color: '#ffcc44', unlockCost: 200 }
+  { id: 'revive', name: 'Second Wind', desc: 'Auto-revive once if you die (50% HP)', icon: '🌟', manaCost: 60, cooldown: 0, type: 'revive', color: '#ffcc44', unlockCost: 200 },
+  { id: 'meteor', name: 'Meteor Strike', desc: 'Massive 80 DMG to nearest enemy', icon: '☄️', manaCost: 70, cooldown: 0, dmg: 80, type: 'attack', color: '#ff4400', unlockCost: 250 },
+  { id: 'blizzard', name: 'Blizzard', desc: 'Hit ALL enemies for 25 DMG + slow', icon: '🌨️', manaCost: 55, cooldown: 0, dmg: 25, type: 'aoe', color: '#88ccff', unlockCost: 180 },
+  { id: 'bloodpact', name: 'Blood Pact', desc: 'Sacrifice 20 HP for 50 mana', icon: '🩸', manaCost: 0, cooldown: 0, type: 'bloodpact', color: '#cc1133', unlockCost: 100 },
+  { id: 'warCry', name: 'War Cry', desc: '+50% DMG for 5 hits', icon: '📯', manaCost: 35, cooldown: 0, type: 'buff', color: '#ddaa22', unlockCost: 140 },
+  { id: 'timestop', name: 'Time Stop', desc: 'Freeze all enemies for 3 seconds', icon: '⏳', manaCost: 50, cooldown: 0, type: 'timestop', color: '#44ddcc', unlockCost: 220 },
+  { id: 'summon', name: 'Spirit Wolf', desc: 'Summon a wolf that fights for you', icon: '🐺', manaCost: 45, cooldown: 0, type: 'summon', color: '#88aacc', unlockCost: 160 }
 ];
 
 let playerMana = 100, playerMaxMana = 100, abilityPoints = 1;
@@ -5241,6 +5540,7 @@ let berserkCounter = 0;
 
 function useAbility(slotIdx) {
   if (!dungeon.active) return;
+  if(dungeon.challenge==='noAbility'){addDungeonLog('❌ Abilities disabled in this challenge!');return;}
   const abId = equippedAbilitySlots[slotIdx];
   if (!abId) return;
   const ab = ABILITIES.find(a => a.id === abId);
@@ -5280,6 +5580,7 @@ function useAbility(slotIdx) {
     addDungeonLog(ab.icon + ' ' + ab.name + '! Hit ' + hits + ' enemies! -' + ab.manaCost + ' mana');
   } else if (ab.type === 'heal') {
     if(dungeon.modifier&&dungeon.modifier.effect.noHeal){addDungeonLog('❌ Cursed floor! Healing is blocked!');playerMana+=ab.manaCost;updateDungeonHp();return;}
+    if(dungeon.challenge==='ironman'){addDungeonLog('❌ No healing in Ironman!');playerMana+=ab.manaCost;updateDungeonHp();return;}
     dungeon.hp = Math.min(dungeon.maxHp, dungeon.hp + ab.heal);
     spawnDungeonParticle(dungeon.px,dungeon.py,'#44dd77',10,2);
     addDungeonLog(ab.icon + ' Healed ' + ab.heal + ' HP! -' + ab.manaCost + ' mana');
@@ -5290,6 +5591,7 @@ function useAbility(slotIdx) {
   } else if (ab.type === 'buff') {
     if(ab.id==='berserk'){berserkCounter=3;spawnDungeonParticle(dungeon.px,dungeon.py,'#dd3322',12,3);addDungeonLog(ab.icon+' BERSERK! Double damage for 3 fights!');}
     else if(ab.id==='thorns'){thornsCounter=3;spawnDungeonParticle(dungeon.px,dungeon.py,'#44aa44',10,2);addDungeonLog(ab.icon+' Thorn Armor! Reflecting 50% damage for 3 fights!');}
+    else if(ab.id==='warCry'){berserkCounter=5;spawnDungeonParticle(dungeon.px,dungeon.py,'#ddaa22',12,4);addDungeonLog(ab.icon+' WAR CRY! +50% DMG for 5 hits!');}
     addDungeonLog('-'+ab.manaCost+' mana');
   } else if (ab.type === 'teleport') {
     // Warp to random floor tile
@@ -5313,6 +5615,24 @@ function useAbility(slotIdx) {
   } else if (ab.type === 'revive') {
     dungeon._hasRevive=true;
     addDungeonLog(ab.icon+' Second Wind active! Will revive at 50% HP if killed. -'+ab.manaCost+' mana');
+  } else if (ab.type === 'bloodpact') {
+    if(dungeon.hp<=20){addDungeonLog('Not enough HP!');return;}
+    dungeon.hp-=20;playerMana=Math.min(playerMaxMana,playerMana+50);
+    spawnDungeonParticle(dungeon.px,dungeon.py,'#cc1133',8,3);
+    spawnFloatingNumber(dungeon.px,dungeon.py-15,'-20 HP','#cc1133');
+    spawnFloatingNumber(dungeon.px,dungeon.py-25,'+50 MP','#4488ff');
+    addDungeonLog(ab.icon+' Blood Pact! -20 HP, +50 mana');
+  } else if (ab.type === 'timestop') {
+    dungeon._timeStop=90; // 3 seconds at 30fps
+    spawnDungeonParticle(dungeon.px,dungeon.py,'#44ddcc',15,5);
+    addDungeonLog(ab.icon+' TIME STOP! All enemies frozen! -'+ab.manaCost+' mana');
+  } else if (ab.type === 'summon') {
+    // Spawn friendly wolf
+    const sa=Math.random()*Math.PI*2,sd=30;
+    if(!dungeon.allies)dungeon.allies=[];
+    dungeon.allies.push({x:dungeon.px+Math.cos(sa)*sd,y:dungeon.py+Math.sin(sa)*sd,hp:40,dmg:12,alive:true,type:'wolf',atkTimer:0});
+    spawnDungeonParticle(dungeon.px,dungeon.py,'#88aacc',10,4);
+    addDungeonLog(ab.icon+' Spirit Wolf summoned! -'+ab.manaCost+' mana');
   }
   updateDungeonHp();
   document.getElementById('dPlayerHp').textContent = Math.max(0, dungeon.hp) + '/' + dungeon.maxHp + ' | MP:' + playerMana;
@@ -5403,7 +5723,8 @@ function drawDungeonParticles(ctx){
 let dodgeTimer=0, dodgeCooldown=0, dodgeVX=0, dodgeVY=0;
 function checkDodge(key){
   if((key!=='r'&&key!=='R')||dodgeCooldown>0||dodgeTimer>0)return;
-  dodgeTimer=8;dodgeCooldown=30;
+  const rogueDodge=typeof getClassId==='function'&&getClassId()==='rogue';
+  dodgeTimer=8;dodgeCooldown=rogueDodge?15:30;
   const sp=6;
   const f=dungeon.facing;
   dodgeVX=0;dodgeVY=0;
@@ -5442,26 +5763,36 @@ function refreshStats(){
 // PRESTIGE SYSTEM
 // ══════════════════════════════════════
 let prestigeLevel=0;
-function getPrestigeGoldMult(){return 1+prestigeLevel*0.05;}
-function getPrestigeLuckMult(){return 1+prestigeLevel*0.03;}
+function getPrestigeGoldMult(){return (1+prestigeLevel*0.05)*(ascensionTier>0?getAscensionBonuses(ascensionTier).goldMult:1);}
+function getPrestigeLuckMult(){return (1+prestigeLevel*0.03)*(ascensionTier>0?getAscensionBonuses(ascensionTier).luckMult:1);}
 
 document.getElementById('prestigeBtn').addEventListener('click',()=>{
-  const canPrestige=gameStats.highestFloor>=10||gameStats.totalKills>=500;
-  if(!canPrestige){alert('Need Floor 10 clear or 500 total kills to prestige!');return;}
-  if(!confirm('Prestige will reset ALL progress (gold, inventory, materials, unlocks) but give permanent bonuses. Continue?'))return;
+  const req=typeof getPrestigeRequirement==='function'?getPrestigeRequirement(prestigeLevel):{floor:10,kills:500};
+  const canPrestige=gameStats.highestFloor>=req.floor||gameStats.totalKills>=req.kills;
+  if(!canPrestige){alert('Need Floor '+req.floor+' clear or '+req.kills+' total kills to prestige!');return;}
+  if(!confirm('Prestige '+(prestigeLevel+1)+' will reset progress but give permanent bonuses. Continue?'))return;
   prestigeLevel++;
+  // Check ascension (every 10 prestiges)
+  const newAscTier=Math.floor(prestigeLevel/10);
+  if(newAscTier>ascensionTier){
+    ascensionTier=newAscTier;
+    addDungeonLog('⚜️ ASCENSION TIER '+ascensionTier+'! Massive permanent bonuses unlocked!');
+    if(typeof checkAchievements==='function')checkAchievements();
+  }
   // Reset everything
-  gold=20;inventory.length=0;equippedIndex=-1;lastSword=null;
+  const startG=ascensionTier>0?getAscensionBonuses(ascensionTier).startGold:20;
+  gold=startG;inventory.length=0;equippedIndex=-1;lastSword=null;
   Object.keys(materialStash).forEach(k=>delete materialStash[k]);
   Object.keys(unlocked).forEach(k=>{unlocked[k]=false;});
   document.querySelectorAll('.locked-material').forEach(opt=>{opt.disabled=true;if(!opt.textContent.includes('Locked'))opt.textContent+=' (Locked)';});
   document.querySelectorAll('.dungeon-material').forEach(opt=>{opt.disabled=true;});
   playerMana=playerMaxMana;
-  // Keep: prestige level, discovered enemies, abilities unlocked, stats
   gameStats.swordsForged=0;gameStats.dungeonsAttempted=0;gameStats.dungeonsCompleted=0;
-  setGold(20);
+  setGold(startG);
   addDungeonLog('✨ PRESTIGE '+prestigeLevel+'! Gold +'+Math.round(prestigeLevel*5)+'% | Luck +'+Math.round(prestigeLevel*3)+'%');
   refreshStats();refreshInventory();
+  if(typeof refreshPrestigeUI==='function')refreshPrestigeUI();
+  if(typeof refreshTitleUI==='function')refreshTitleUI();
   if(typeof saveGame==='function')saveGame();
 });
 
@@ -5496,6 +5827,7 @@ function addXP(amount){
     playerLevel++;
     skillPoints++;
     addDungeonLog('🎉 Level '+playerLevel+'! +1 Skill Point');
+    if(typeof playSFX==='function')playSFX('levelUp');
     needed=xpForLevel(playerLevel);
   }
   updateXPBar();
@@ -5640,12 +5972,12 @@ const ACHIEVEMENTS=[
   {id:'kill10',name:'First Blood',desc:'Kill 10 enemies',icon:'💀',check:()=>gameStats.totalKills>=10,reward:{type:'gold',amount:20}},
   {id:'kill100',name:'Slayer',desc:'Kill 100 enemies',icon:'☠️',check:()=>gameStats.totalKills>=100,reward:{type:'xp',amount:150}},
   {id:'kill500',name:'Genocide',desc:'Kill 500 enemies',icon:'👹',check:()=>gameStats.totalKills>=500,reward:{type:'gold',amount:500}},
-  {id:'kill1000',name:'Death Incarnate',desc:'Kill 1000 enemies',icon:'🩸',check:()=>gameStats.totalKills>=1000,reward:{type:'xp',amount:500}},
+  {id:'kill1000',name:'Death Incarnate',desc:'Kill 1000 enemies',icon:'🩸',check:()=>gameStats.totalKills>=1000,reward:{type:'xp',amount:500,title:'Death Incarnate',skillPts:3}},
   // Dungeon
   {id:'floor5',name:'Dungeon Diver',desc:'Reach floor 5',icon:'🏰',check:()=>gameStats.highestFloor>=5,reward:{type:'gold',amount:40}},
   {id:'floor10',name:'Deep Explorer',desc:'Reach floor 10',icon:'🗿',check:()=>gameStats.highestFloor>=10,reward:{type:'xp',amount:200}},
   {id:'floor15',name:'Abyssal Wanderer',desc:'Reach floor 15',icon:'🌋',check:()=>gameStats.highestFloor>=15,reward:{type:'gold',amount:150}},
-  {id:'floor20',name:'Dungeon Master',desc:'Complete all 20 floors',icon:'👑',check:()=>gameStats.highestFloor>=20,reward:{type:'xp',amount:500}},
+  {id:'floor20',name:'Dungeon Master',desc:'Complete all 20 floors',icon:'👑',check:()=>gameStats.highestFloor>=20,reward:{type:'xp',amount:500,title:'Dungeon Master',aura:'holy',skillPts:5}},
   {id:'dClear1',name:'Survivor',desc:'Complete a dungeon run',icon:'🎯',check:()=>gameStats.dungeonsCompleted>=1,reward:{type:'gold',amount:30}},
   {id:'dClear10',name:'Veteran',desc:'Complete 10 dungeon runs',icon:'🏅',check:()=>gameStats.dungeonsCompleted>=10,reward:{type:'xp',amount:300}},
   {id:'die5',name:'Stubborn',desc:'Die 5 times',icon:'💔',check:()=>gameStats.deaths>=5,reward:{type:'xp',amount:50}},
@@ -5653,7 +5985,7 @@ const ACHIEVEMENTS=[
   // Economy
   {id:'gold500',name:'Pocket Change',desc:'Earn 500 gold total',icon:'💰',check:()=>gameStats.totalGoldEarned>=500,reward:{type:'xp',amount:50}},
   {id:'gold5000',name:'Wealthy',desc:'Earn 5000 gold total',icon:'💎',check:()=>gameStats.totalGoldEarned>=5000,reward:{type:'xp',amount:200}},
-  {id:'gold20000',name:'Tycoon',desc:'Earn 20000 gold total',icon:'🏦',check:()=>gameStats.totalGoldEarned>=20000,reward:{type:'gold',amount:500}},
+  {id:'gold20000',name:'Tycoon',desc:'Earn 20000 gold total',icon:'🏦',check:()=>gameStats.totalGoldEarned>=20000,reward:{type:'gold',amount:500,title:'Tycoon',skillPts:2}},
   // Enchant
   {id:'spin5',name:'Gambler',desc:'Spin the enchant wheel 5 times',icon:'🎰',check:()=>gameStats.enchantSpins>=5,reward:{type:'gold',amount:25}},
   {id:'spin25',name:'High Roller',desc:'Spin the enchant wheel 25 times',icon:'🎲',check:()=>gameStats.enchantSpins>=25,reward:{type:'xp',amount:150}},
@@ -5669,8 +6001,15 @@ const ACHIEVEMENTS=[
   {id:'prestige3',name:'Ascended',desc:'Reach prestige level 3',icon:'🔮',check:()=>prestigeLevel>=3,reward:{type:'gold',amount:500}},
   // Endless
   {id:'endless25',name:'Into the Abyss',desc:'Reach floor 25 in endless mode',icon:'🕳️',check:()=>gameStats.highestFloor>=25,reward:{type:'xp',amount:300}},
-  {id:'endless30',name:'Void Walker',desc:'Reach floor 30 in endless mode',icon:'🌀',check:()=>gameStats.highestFloor>=30,reward:{type:'gold',amount:500}},
-  {id:'endless50',name:'Infinite',desc:'Reach floor 50 in endless mode',icon:'♾️',check:()=>gameStats.highestFloor>=50,reward:{type:'xp',amount:1000}}
+  {id:'endless30',name:'Void Walker',desc:'Reach floor 30 in endless mode',icon:'🌀',check:()=>gameStats.highestFloor>=30,reward:{type:'gold',amount:500,title:'Void Walker',aura:'shadow',skillPts:3}},
+  {id:'endless50',name:'Infinite',desc:'Reach floor 50 in endless mode',icon:'♾️',check:()=>gameStats.highestFloor>=50,reward:{type:'xp',amount:1000,title:'The Infinite',aura:'arcane',skillPts:5}},
+  // Ascension
+  {id:'ascension1',name:'Transcendent',desc:'Reach Ascension Tier 1 (Prestige 10)',icon:'⚜️',check:()=>ascensionTier>=1,reward:{type:'xp',amount:2000,title:'Transcendent',skillPts:10}},
+  {id:'ascension2',name:'Godslayer',desc:'Reach Ascension Tier 2 (Prestige 20)',icon:'🔱',check:()=>ascensionTier>=2,reward:{type:'gold',amount:5000,title:'Godslayer',skillPts:15}},
+  {id:'ascension3',name:'Eternal',desc:'Reach Ascension Tier 3 (Prestige 30)',icon:'👁️',check:()=>ascensionTier>=3,reward:{type:'xp',amount:5000,title:'Eternal',aura:'fire',skillPts:20}},
+  // Prestige milestones
+  {id:'prestige5',name:'Veteran Forger',desc:'Reach prestige level 5',icon:'💫',check:()=>prestigeLevel>=5,reward:{type:'gold',amount:1000,skillPts:3}},
+  {id:'prestige10',name:'Transcendent',desc:'Reach prestige level 10 (Ascension!)',icon:'⚜️',check:()=>prestigeLevel>=10,reward:{type:'xp',amount:2000,skillPts:5}}
 ];
 const unlockedAchievements={};
 
@@ -5684,10 +6023,15 @@ function checkAchievements(){
       // Grant reward
       if(a.reward.type==='gold')updateGold(a.reward.amount);
       else if(a.reward.type==='xp'&&typeof addXP==='function')addXP(a.reward.amount);
+      if(a.reward.skillPts&&typeof skillPoints!=='undefined')skillPoints+=a.reward.skillPts;
       // Notification in dungeon log if active
-      if(typeof addDungeonLog==='function')addDungeonLog('🏆 Achievement: '+a.name+'!');
+      let msg='🏆 Achievement: '+a.name+'!';
+      if(a.reward.title)msg+=' Title unlocked: '+a.reward.title;
+      if(a.reward.skillPts)msg+=' +'+a.reward.skillPts+' Skill Points!';
+      if(typeof addDungeonLog==='function')addDungeonLog(msg);
     }
   });
+  if(newUnlock&&typeof refreshTitleUI==='function')refreshTitleUI();
   return newUnlock;
 }
 
@@ -5701,7 +6045,7 @@ function refreshAchievements(){
   let html='';
   ACHIEVEMENTS.forEach(a=>{
     const got=unlockedAchievements[a.id];
-    const rewardText=a.reward.type==='gold'?'+'+a.reward.amount+' gold':'+'+a.reward.amount+' XP';
+    const rewardText=typeof getAchievementRewardText==='function'?getAchievementRewardText(a):(a.reward.type==='gold'?'+'+a.reward.amount+' gold':'+'+a.reward.amount+' XP');
     const rewardColor=a.reward.type==='gold'?'#ffdd44':'#cc88ff';
     html+='<div style="background:'+(got?'#1e1e22':'#16161a')+';border:1px solid '+(got?'#44dd77':'#2a2a30')+';border-radius:8px;padding:10px;display:flex;align-items:center;gap:10px;opacity:'+(got?'1':'0.6')+';'+(got?'box-shadow:0 0 8px rgba(68,221,119,0.1);':'')+'\">';
     html+='<div style="font-size:1.5rem;'+(got?'':'filter:grayscale(1);')+'">'+a.icon+'</div>';
@@ -5808,6 +6152,252 @@ function refreshEndlessRecord(){
 }
 
 // ══════════════════════════════════════
+// CLASS SYSTEM
+// ══════════════════════════════════════
+const CLASSES={
+  warrior:{name:'Warrior',icon:'⚔️',desc:'+20% max HP, +10% melee damage. Passive: gain 2 HP on kill.',
+    hpMult:1.2,dmgMult:1.1,manaMult:1,critBonus:0,defBonus:0,onKillHeal:2,abilityDmgMult:1,speedMult:1},
+  rogue:{name:'Rogue',icon:'🗡️',desc:'+25% crit chance, +20% move speed. Passive: dodge roll cooldown halved.',
+    hpMult:1,dmgMult:1,manaMult:1,critBonus:0.25,defBonus:0,onKillHeal:0,abilityDmgMult:1,speedMult:1.2},
+  mage:{name:'Mage',icon:'🔮',desc:'+40% max mana, +15% ability damage. Passive: mana regen doubled.',
+    hpMult:0.9,dmgMult:0.95,manaMult:1.4,critBonus:0,defBonus:0,onKillHeal:0,abilityDmgMult:1.15,speedMult:1},
+  paladin:{name:'Paladin',icon:'🛡️',desc:'+15% defense, heal 1 HP/sec. Passive: holy smite on every 5th hit.',
+    hpMult:1.1,dmgMult:1,manaMult:1,critBonus:0,defBonus:0.15,onKillHeal:0,abilityDmgMult:1,speedMult:1,passiveHeal:true}
+};
+
+function getPlayerClass(){
+  const sel=document.getElementById('charClass');
+  return CLASSES[sel?sel.value:'warrior']||CLASSES.warrior;
+}
+function getClassId(){
+  const sel=document.getElementById('charClass');
+  return sel?sel.value:'warrior';
+}
+
+function updateClassDesc(){
+  const cl=getPlayerClass();
+  const el=document.getElementById('classDesc');
+  if(el)el.textContent=cl.icon+' '+cl.desc;
+}
+document.getElementById('charClass').addEventListener('change',()=>{updateClassDesc();drawCharacter();if(typeof saveGame==='function')saveGame();});
+
+// ══════════════════════════════════════
+// DUNGEON EVENTS
+// ══════════════════════════════════════
+const DUNGEON_EVENTS=[
+  {id:'shrine_power',name:'Power Shrine',desc:'A glowing shrine pulses with energy.',icon:'⚡',
+    options:[
+      {text:'Pray (+15% DMG this run)',action:(d)=>{d._eventDmgBuff=(d._eventDmgBuff||1)*1.15;return'You feel stronger! +15% DMG';}},
+      {text:'Ignore',action:()=>'You walk past.'}
+    ]},
+  {id:'shrine_sacrifice',name:'Blood Shrine',desc:'A dark altar demands a sacrifice.',icon:'🩸',
+    options:[
+      {text:'Sacrifice 25% HP (double gold this floor)',action:(d)=>{d.hp=Math.round(d.hp*0.75);d._eventGoldBuff=2;return'Pain... but gold glitters brighter. -25% HP, 2x gold!';}},
+      {text:'Refuse',action:()=>'You back away carefully.'}
+    ]},
+  {id:'traveler',name:'Wounded Traveler',desc:'A injured adventurer lies against the wall.',icon:'🧑',
+    options:[
+      {text:'Help them (heal 20 HP, +XP)',action:(d)=>{d.hp=Math.min(d.maxHp,d.hp+20);if(typeof addXP==='function')addXP(25);return'They thank you and share wisdom. +20 HP, +25 XP!';}},
+      {text:'Loot them (+gold)',action:(d)=>{const g=15+d.floor*5;updateGold(g);return'You find '+g+' gold. You feel guilty.';}},
+      {text:'Walk past',action:()=>'You look away.'}
+    ]},
+  {id:'cursed_chest',name:'Cursed Chest',desc:'A chest radiates dark energy. Open it?',icon:'💀',
+    options:[
+      {text:'Open (50/50: great loot or trap)',action:(d)=>{if(Math.random()<0.5){const g=40+d.floor*10;updateGold(g);return'Jackpot! +'+g+' gold!';}else{const dmg=10+d.floor*2;d.hp-=dmg;return'CURSED! -'+dmg+' HP!';}}},
+      {text:'Leave it',action:()=>'Probably wise.'}
+    ]},
+  {id:'fountain',name:'Mystic Fountain',desc:'Clear water flows from an ancient fountain.',icon:'🌊',
+    options:[
+      {text:'Drink (restore 40% HP)',action:(d)=>{const h=Math.round(d.maxHp*0.4);d.hp=Math.min(d.maxHp,d.hp+h);return'Refreshing! +'+h+' HP';}},
+      {text:'Fill mana (restore 50% mana)',action:(d)=>{const m=Math.round(playerMaxMana*0.5);playerMana=Math.min(playerMaxMana,playerMana+m);return'Magical! +'+m+' mana';}}
+    ]},
+  {id:'gamble',name:'Goblin Gambler',desc:'A goblin offers you a bet.',icon:'🎲',
+    options:[
+      {text:'Bet 30 gold (60% chance to double)',action:(d)=>{if(gold<30)return'Not enough gold!';updateGold(-30);if(Math.random()<0.6){updateGold(60);return'You won! +60 gold!';}return'You lost! -30 gold.';}},
+      {text:'No thanks',action:()=>'Smart move... or is it?'}
+    ]},
+  {id:'forge_spirit',name:'Forge Spirit',desc:'A spectral blacksmith appears before you.',icon:'🔨',
+    options:[
+      {text:'Accept blessing (+5 DMG to weapon this run)',action:(d)=>{d._eventDmgFlat=(d._eventDmgFlat||0)+5;return'Your weapon glows! +5 flat DMG this run.';}},
+      {text:'Ask for protection (+20 max HP this run)',action:(d)=>{d.maxHp+=20;d.hp+=20;return'You feel tougher! +20 max HP.';}},
+    ]},
+  {id:'portal',name:'Unstable Portal',desc:'A shimmering rift crackles with energy.',icon:'🌀',
+    options:[
+      {text:'Enter (skip to next floor)',action:(d)=>{d._skipFloor=true;return'You tumble through... emerging on the next floor!';}},
+      {text:'Absorb energy (+30 mana)',action:(d)=>{playerMana=Math.min(playerMaxMana,playerMana+30);return'The energy surges through you! +30 mana.';}},
+      {text:'Avoid',action:()=>'Too risky.'}
+    ]}
+];
+
+function spawnDungeonEvents(rooms,floor){
+  const events=[];
+  // 35% chance per floor, more on later floors
+  if(Math.random()<0.35+floor*0.02){
+    const ev=DUNGEON_EVENTS[Math.floor(Math.random()*DUNGEON_EVENTS.length)];
+    const room=rooms[1+Math.floor(Math.random()*(rooms.length-2))];
+    const ex=Math.floor(room.x+room.w/2)*DTS+DTS/2;
+    const ey=Math.floor(room.y+room.h/2)*DTS+DTS/2;
+    events.push({...ev,x:ex,y:ey,active:true});
+  }
+  return events;
+}
+
+function triggerEvent(ev){
+  if(!ev.active)return;
+  // Show options as prompt
+  let msg=ev.icon+' '+ev.name+'\n'+ev.desc+'\n\n';
+  ev.options.forEach((o,i)=>{msg+=(i+1)+'. '+o.text+'\n';});
+  const choice=prompt(msg+'Enter number:');
+  const idx=parseInt(choice)-1;
+  if(idx>=0&&idx<ev.options.length){
+    const result=ev.options[idx].action(dungeon);
+    addDungeonLog(ev.icon+' '+result);
+    spawnDungeonParticle(ev.x,ev.y,'#cc88ff',10,4);
+    if(dungeon._skipFloor){dungeon._skipFloor=false;dungeon.floor++;dungeon._floorTimer=0;loadFloor(dungeon.floor);addDungeonLog('Floor '+(dungeon.floor+1)+'!');}
+    updateDungeonHp();
+  }else{addDungeonLog(ev.icon+' You walk away.');}
+  ev.active=false;
+}
+
+// ══════════════════════════════════════
+// TITLE SYSTEM
+// ══════════════════════════════════════
+const TITLES=[
+  {id:'apprentice',name:'Apprentice Smith',req:'firstForge',color:'#aaa'},
+  {id:'slayer',name:'Slayer',req:'kill100',color:'#dd4444'},
+  {id:'deathIncarnate',name:'Death Incarnate',req:'kill1000',color:'#cc2222'},
+  {id:'dungeonDiver',name:'Dungeon Diver',req:'floor5',color:'#4488ff'},
+  {id:'deepExplorer',name:'Deep Explorer',req:'floor10',color:'#44aadd'},
+  {id:'dungeonMaster',name:'Dungeon Master',req:'floor20',color:'#ffaa33'},
+  {id:'survivor',name:'Survivor',req:'dClear1',color:'#44dd77'},
+  {id:'veteran',name:'Veteran',req:'dClear10',color:'#88ffaa'},
+  {id:'wealthy',name:'Wealthy',req:'gold5000',color:'#ffdd44'},
+  {id:'tycoon',name:'Tycoon',req:'gold20000',color:'#ffcc00'},
+  {id:'elite',name:'Elite',req:'level20',color:'#cc88ff'},
+  {id:'reborn',name:'Reborn',req:'prestige1',color:'#aa44cc'},
+  {id:'ascended',name:'Ascended',req:'prestige3',color:'#9944cc'},
+  {id:'voidWalker',name:'Void Walker',req:'endless30',color:'#6644aa'},
+  {id:'infinite',name:'The Infinite',req:'endless50',color:'#ff44ff'},
+  {id:'stubborn',name:'Stubborn',req:'die5',color:'#888'},
+  {id:'encyclopedist',name:'Encyclopedist',req:'discover30',color:'#44ccaa'},
+  {id:'masterSmith',name:'Master Blacksmith',req:'forge50',color:'#c89b3c'},
+  {id:'perfection',name:'Perfectionist',req:'gradeS',color:'#ffaa33'},
+  // Ascension titles
+  {id:'ascTier1',name:'Transcendent',req:'ascension1',color:'#ff8844'},
+  {id:'ascTier2',name:'Godslayer',req:'ascension2',color:'#ff4466'},
+  {id:'ascTier3',name:'Eternal',req:'ascension3',color:'#ff44ff'}
+];
+let activeTitle='';
+
+function getUnlockedTitles(){
+  return TITLES.filter(t=>{
+    if(t.req.startsWith('ascension'))return ascensionTier>=parseInt(t.req.replace('ascension',''));
+    return unlockedAchievements[t.req];
+  });
+}
+
+function refreshTitleUI(){
+  const sel=document.getElementById('titleSelect');
+  const disp=document.getElementById('activeTitleDisplay');
+  const list=document.getElementById('unlockedTitles');
+  const unlocked=getUnlockedTitles();
+  sel.innerHTML='<option value="">No Title</option>';
+  let listHtml='';
+  unlocked.forEach(t=>{
+    sel.innerHTML+='<option value="'+t.id+'" style="color:'+t.color+';"'+(activeTitle===t.id?' selected':'')+'>'+t.name+'</option>';
+    listHtml+='<div style="color:'+t.color+';">'+t.name+'</div>';
+  });
+  if(!listHtml)listHtml='<div style="color:#555;">Unlock achievements to earn titles!</div>';
+  list.innerHTML=listHtml;
+  const at=TITLES.find(t=>t.id===activeTitle);
+  disp.textContent=at?at.name:'None';
+  disp.style.color=at?at.color:'#888';
+}
+
+document.getElementById('titleSelect').addEventListener('change',(e)=>{
+  activeTitle=e.target.value;
+  refreshTitleUI();
+  if(typeof saveGame==='function')saveGame();
+});
+
+// ══════════════════════════════════════
+// ASCENSION SYSTEM (every 10 prestiges)
+// ══════════════════════════════════════
+let ascensionTier=0;
+
+function getPrestigeRequirement(pLevel){
+  // Gets harder each prestige: floor req + kill req scale up
+  const floorReq=Math.min(10+pLevel*2,20+ascensionTier*5); // caps at 20 base, +5 per ascension
+  const killReq=500+pLevel*200+ascensionTier*500;
+  return{floor:floorReq,kills:killReq};
+}
+
+function getAscensionBonuses(tier){
+  return{
+    dmgMult:1+tier*0.1,        // +10% DMG per ascension
+    hpMult:1+tier*0.15,        // +15% max HP per ascension
+    goldMult:1+tier*0.2,       // +20% gold per ascension
+    luckMult:1+tier*0.1,       // +10% enchant luck per ascension
+    xpMult:1+tier*0.15,        // +15% XP per ascension
+    startGold:20+tier*50       // more starting gold per ascension
+  };
+}
+
+function refreshPrestigeUI(){
+  const req=getPrestigeRequirement(prestigeLevel);
+  const reqEl=document.getElementById('prestigeReqDisplay');
+  reqEl.textContent='Next prestige requires: Floor '+req.floor+' or '+req.kills+' kills';
+  const ascEl=document.getElementById('ascensionDisplay');
+  if(ascensionTier>0){
+    const ab=getAscensionBonuses(ascensionTier);
+    ascEl.innerHTML='<div style="margin-top:6px;padding:8px;background:rgba(255,68,255,0.05);border:1px solid rgba(255,68,255,0.2);border-radius:8px;">'+
+      '<div style="font-weight:bold;color:#ff44ff;font-size:0.85rem;">⚜️ Ascension Tier '+ascensionTier+'</div>'+
+      '<div style="font-size:0.75rem;color:#cc88ff;margin-top:4px;">'+
+      '+'+Math.round((ab.dmgMult-1)*100)+'% DMG | '+
+      '+'+Math.round((ab.hpMult-1)*100)+'% HP | '+
+      '+'+Math.round((ab.goldMult-1)*100)+'% Gold | '+
+      '+'+Math.round((ab.xpMult-1)*100)+'% XP'+
+      '</div></div>';
+  }else{
+    ascEl.innerHTML='<div style="font-size:0.72rem;color:#666;margin-top:4px;">Reach Prestige 10 to unlock Ascension!</div>';
+  }
+}
+
+// Achievement reward types — add title and cosmetic rewards to hard achievements
+function getAchievementRewardText(a){
+  let txt=a.reward.type==='gold'?'+'+a.reward.amount+' gold':'+'+a.reward.amount+' XP';
+  if(a.reward.title)txt+=' + Title: '+a.reward.title;
+  if(a.reward.aura)txt+=' + Aura: '+a.reward.aura;
+  if(a.reward.skillPts)txt+=' + '+a.reward.skillPts+' Skill Points';
+  return txt;
+}
+
+// ══════════════════════════════════════
+// CHALLENGE MODES
+// ══════════════════════════════════════
+function getChallenge(){
+  const sel=document.getElementById('challengeMode');
+  return sel?sel.value:'none';
+}
+function applyChallengeStart(){
+  const ch=getChallenge();
+  dungeon.challenge=ch;
+  dungeon._floorTimer=0;
+  if(ch==='glass'){dungeon.maxHp=1;dungeon.hp=1;}
+  if(ch!=='none')addDungeonLog('🏆 Challenge: '+{glass:'Glass Cannon',speedrun:'Speed Run',noAbility:'No Abilities',bossRush:'Boss Rush',ironman:'Ironman'}[ch]+'!');
+}
+function getChallengeGoldMult(){
+  const ch=dungeon.challenge||'none';
+  if(ch==='glass')return 3;if(ch==='noAbility')return 1.5;
+  return 1;
+}
+function getChallengeXPMult(){
+  const ch=dungeon.challenge||'none';
+  if(ch==='speedrun'||ch==='ironman')return 2;
+  return 1;
+}
+
+// ══════════════════════════════════════
 // DUNGEON CHECKPOINTS
 // ══════════════════════════════════════
 let dungeonCheckpoint=0; // highest checkpoint reached (0, 10, 20, 30...)
@@ -5860,6 +6450,38 @@ document.getElementById('resumeCheckpointBtn').addEventListener('click',()=>{
 });
 
 // ══════════════════════════════════════
+// TUTORIAL
+// ══════════════════════════════════════
+let tutorialPage=0;
+const tutPages=document.querySelectorAll('.tutPage');
+function showTutPage(n){
+  tutorialPage=Math.max(0,Math.min(n,tutPages.length-1));
+  tutPages.forEach((p,i)=>p.style.display=i===tutorialPage?'block':'none');
+  document.getElementById('tutPageNum').textContent=(tutorialPage+1)+' / '+tutPages.length;
+  document.getElementById('tutPrev').disabled=tutorialPage===0;
+  document.getElementById('tutNext').textContent=tutorialPage===tutPages.length-1?'Done ✓':'Next →';
+}
+document.getElementById('helpBtn').addEventListener('click',()=>{
+  document.getElementById('tutorialOverlay').style.display='block';
+  showTutPage(0);
+});
+document.getElementById('closeTutorial').addEventListener('click',()=>{
+  document.getElementById('tutorialOverlay').style.display='none';
+});
+document.getElementById('tutNext').addEventListener('click',()=>{
+  if(tutorialPage>=tutPages.length-1){document.getElementById('tutorialOverlay').style.display='none';}
+  else showTutPage(tutorialPage+1);
+});
+document.getElementById('tutPrev').addEventListener('click',()=>showTutPage(tutorialPage-1));
+document.getElementById('tutDontShow').addEventListener('change',(e)=>{
+  try{localStorage.setItem('dungeonMasterHideTutorial',e.target.checked?'1':'');}catch(ex){}
+});
+// Show tutorial on first visit
+try{if(!localStorage.getItem('dungeonMasterHideTutorial')&&!localStorage.getItem('dungeonMasterSave')){
+  document.getElementById('tutorialOverlay').style.display='block';showTutPage(0);
+}}catch(e){}
+
+// ══════════════════════════════════════
 // AUTO-SAVE (localStorage)
 // ══════════════════════════════════════
 function saveGame(){
@@ -5882,6 +6504,8 @@ function saveGame(){
       charState:{...charState},
       charName:document.getElementById('charName')?document.getElementById('charName').value:'Knight',
       redeemedCodes:{...redeemedCodes},
+      ascensionTier,activeTitle,
+      charClass:document.getElementById('charClass')?document.getElementById('charClass').value:'warrior',
       version:2
     };
     localStorage.setItem('dungeonMasterSave',JSON.stringify(save));
@@ -5910,6 +6534,9 @@ function loadGame(){
     abilityPoints=s.abilityPoints||0;playerMaxMana=s.playerMaxMana||100;
     if(s.unlockedAchievements)Object.keys(s.unlockedAchievements).forEach(k=>{unlockedAchievements[k]=s.unlockedAchievements[k];});
     endlessRecord=s.endlessRecord||0;dungeonCheckpoint=s.dungeonCheckpoint||0;
+    if(s.ascensionTier)ascensionTier=s.ascensionTier;
+    if(s.activeTitle)activeTitle=s.activeTitle;
+    if(s.charClass&&document.getElementById('charClass'))document.getElementById('charClass').value=s.charClass;
     if(s.redeemedCodes)Object.keys(s.redeemedCodes).forEach(k=>{redeemedCodes[k]=s.redeemedCodes[k];});
     if(s.leaderboard){
       if(s.leaderboard.bestSwords)leaderboard.bestSwords=s.leaderboard.bestSwords;
@@ -5948,6 +6575,9 @@ updateXPBar();
 refreshSkillTree();
 if(typeof refreshCheckpointUI==='function')refreshCheckpointUI();
 if(typeof refreshEndlessRecord==='function')refreshEndlessRecord();
+if(typeof refreshPrestigeUI==='function')refreshPrestigeUI();
+if(typeof refreshTitleUI==='function')refreshTitleUI();
+if(typeof updateClassDesc==='function')updateClassDesc();
 if(didLoad){refreshInventory();refreshMaterialDisplay();initCharPickers();drawCharacter();}
 if(didLoad)addDungeonLog('💾 Save data loaded!');
 
@@ -6061,6 +6691,42 @@ document.getElementById('resetGameBtn').addEventListener('click', () => {
     location.reload();
   }
 });
+
+// ══════════════════════════════════════
+// SOUND EFFECTS
+// ══════════════════════════════════════
+let sfxReady=false;
+const SFX={};
+async function initSFX(){
+  if(sfxReady)return;
+  try{
+    await Tone.start();
+    SFX.hit=new Tone.MembraneSynth({pitchDecay:0.05,octaves:4,envelope:{attack:0.001,decay:0.1,sustain:0,release:0.05}}).toDestination();
+    SFX.hit.volume.value=-12;
+    SFX.swing=new Tone.NoiseSynth({noise:{type:'white'},envelope:{attack:0.001,decay:0.06,sustain:0,release:0.02}}).toDestination();
+    SFX.swing.volume.value=-18;
+    SFX.chest=new Tone.Synth({oscillator:{type:'triangle'},envelope:{attack:0.01,decay:0.15,sustain:0.1,release:0.2}}).toDestination();
+    SFX.chest.volume.value=-10;
+    SFX.levelUp=new Tone.PolySynth(Tone.Synth,{oscillator:{type:'sine'},envelope:{attack:0.02,decay:0.3,sustain:0.1,release:0.4}}).toDestination();
+    SFX.levelUp.volume.value=-8;
+    SFX.death=new Tone.MembraneSynth({pitchDecay:0.1,octaves:6,envelope:{attack:0.01,decay:0.4,sustain:0,release:0.2}}).toDestination();
+    SFX.death.volume.value=-10;
+    SFX.boss=new Tone.FMSynth({harmonicity:3,modulationIndex:10,envelope:{attack:0.01,decay:0.5,sustain:0.1,release:0.3}}).toDestination();
+    SFX.boss.volume.value=-8;
+    sfxReady=true;
+  }catch(e){}
+}
+function playSFX(name,note,dur){
+  if(!sfxReady||!SFX[name])return;
+  try{
+    if(name==='swing')SFX.swing.triggerAttackRelease(dur||'16n');
+    else if(name==='levelUp')SFX.levelUp.triggerAttackRelease(['C5','E5','G5'],'8n');
+    else SFX[name].triggerAttackRelease(note||'C2',dur||'8n');
+  }catch(e){}
+}
+// Auto-init SFX on first user interaction
+document.addEventListener('click',()=>initSFX(),{once:true});
+document.addEventListener('keydown',()=>initSFX(),{once:true});
 
 // ══════════════════════════════════════
 // LOFI MUSIC
