@@ -321,29 +321,26 @@
 
     <div class="panel wide">
       <h2>Quenching Chamber</h2>
-      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;">
+      <label>Select Sword to Quench</label>
+      <select id="quenchSwordSelect"><option value="-1">-- Last forged sword --</option></select>
+      <div id="quenchSwordInfo" style="margin:8px 0;padding:10px;background:#16161a;border-radius:8px;border:1px solid #2a2a30;font-size:0.85rem;">No sword selected.</div>
+
+      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin:12px 0;">
+        <canvas id="quenchVisual" width="120" height="160" style="display:block;background:#0a0a10;border-radius:10px;border:1px solid #2a2a30;flex:0 0 auto;"></canvas>
         <div style="flex:1;min-width:220px;">
-          <label>Select Sword to Quench</label>
-          <select id="quenchSwordSelect"><option value="-1">-- Last forged sword --</option></select>
-          <div id="quenchSwordInfo" style="margin:8px 0;padding:10px;background:#16161a;border-radius:8px;border:1px solid #2a2a30;font-size:0.9rem;">No sword selected.</div>
-          <p style="color:#888;font-size:0.82rem;margin:8px 0;">Heat the blade and quench at the perfect moment.</p>
-          <div style="display:flex;gap:8px;margin:10px 0;">
-            <button id="startQuench" style="flex:1;">Heat Blade</button>
-            <button id="quenchNow" disabled style="flex:1;background:linear-gradient(180deg,#2266cc,#1a4488);color:#aaccff;">Quench Now!</button>
-          </div>
-          <div id="quenchStatus" style="margin-top:6px;padding:8px;background:#16161a;border-radius:6px;border:1px solid #2a2a30;font-size:0.9rem;text-align:center;">Ready to quench.</div>
-        </div>
-        <div style="flex:0 0 auto;text-align:center;">
-          <div style="font-size:0.75rem;color:#666;margin-bottom:4px;">Temperature</div>
-          <div style="position:relative;width:200px;height:50px;margin:0 auto;">
-            <div style="display:flex;justify-content:space-between;font-size:0.65rem;color:#666;margin-bottom:2px;"><span>Cold</span><span>Perfect</span><span>Hot</span></div>
-            <div class="quenchTrack" id="quenchTrack" style="height:32px;border-radius:10px;background:linear-gradient(90deg,#1a3366 0%,#224488 25%,#2288aa 35%,#22aa88 45%,#88cc44 50%,#22aa88 55%,#2288aa 65%,#882222 80%,#661a1a 100%);border:2px solid #333;">
-              <div class="quenchZone" id="quenchZone" style="left:35%;width:18%;border-color:#44ffaa;border-width:2px;"></div>
-              <div class="quenchCursor" id="quenchCursor" style="left:0%;width:6px;border-radius:3px;box-shadow:0 0 10px rgba(255,204,0,0.7);"></div>
+          <p style="color:#999;font-size:0.8rem;margin:0 0 8px;">Heat the blade, then hit <strong style="color:#44ffaa;">Quench</strong> when the cursor is in the green zone.</p>
+          <div style="position:relative;height:40px;margin:8px 0;">
+            <div class="quenchTrack" id="quenchTrack" style="height:36px;border-radius:12px;background:linear-gradient(90deg,#1a2244 0%,#223366 20%,#226655 35%,#33aa77 48%,#44ffaa 50%,#33aa77 52%,#226655 65%,#662222 80%,#441111 100%);border:2px solid rgba(255,255,255,0.08);box-shadow:inset 0 2px 8px rgba(0,0,0,0.4);">
+              <div class="quenchZone" id="quenchZone" style="left:35%;width:22%;border-color:#44ffaa;border-width:2px;background:rgba(68,255,170,0.08);"></div>
+              <div class="quenchCursor" id="quenchCursor" style="left:0%;width:6px;border-radius:3px;box-shadow:0 0 10px rgba(255,204,0,0.7);background:#ffcc00;"></div>
             </div>
-            <div style="position:relative;height:8px;"><div style="position:absolute;left:35%;width:18%;text-align:center;font-size:0.6rem;color:#44ffaa;">▲ Sweet Spot ▲</div></div>
           </div>
-          <canvas id="quenchVisual" width="200" height="120" style="display:block;margin:10px auto 0;background:#0a0a10;border-radius:8px;border:1px solid #2a2a30;"></canvas>
+          <div style="display:flex;justify-content:space-between;font-size:0.65rem;color:#555;margin:-4px 0 8px;"><span>❄️ Cold</span><span style="color:#44ffaa;">✨ Sweet Spot</span><span>🔥 Hot</span></div>
+          <div style="display:flex;gap:8px;">
+            <button id="startQuench" style="flex:1;">🔥 Heat Blade</button>
+            <button id="quenchNow" disabled style="flex:1;background:linear-gradient(135deg,#2288aa,#1a6688);color:#aaeeff;">💧 Quench Now!</button>
+          </div>
+          <div id="quenchStatus" style="margin-top:8px;padding:10px;background:#16161a;border-radius:8px;border:1px solid #2a2a30;font-size:0.85rem;text-align:center;">Ready to quench.</div>
         </div>
       </div>
     </div>
@@ -2006,7 +2003,7 @@ drawQuenchVisual(0);
   const startBtn=document.getElementById('startQuench'), quenchBtn=document.getElementById('quenchNow');
   const st=document.getElementById('quenchStatus'), info=document.getElementById('quenchSwordInfo');
   let pos=0, dir=1, timer=null, active=false;
-  const speed=0.8;
+  const speed=0.6;
   function refreshQuenchInternal(){
     populateSwordSelects();
     const s=getQuenchSword();
@@ -2023,13 +2020,21 @@ drawQuenchVisual(0);
     if(!s||s.sw.quenched){st.textContent=s?'Already quenched!':'No sword!';return;}
     if(active)return;
     active=true; pos=0; dir=1; quenchBtn.disabled=false; startBtn.disabled=true;
-    const zl=20+Math.random()*50;
-    zone.style.left=zl+'%'; zone.style.width='16%';
+    const zl=15+Math.random()*50;
+    zone.style.left=zl+'%'; zone.style.width='22%';
+    // Move the track gradient so the green center matches the zone
+    const track=document.getElementById('quenchTrack');
+    const zMid=zl+11;
+    track.style.background='linear-gradient(90deg,#1a2244 0%,#223366 '+(zMid-20)+'%,#226655 '+(zMid-10)+'%,#33aa77 '+(zMid-3)+'%,#44ffaa '+zMid+'%,#33aa77 '+(zMid+3)+'%,#226655 '+(zMid+10)+'%,#662222 '+(zMid+25)+'%,#441111 100%)';
     st.textContent='Heating… quench in the sweet spot!';
     timer=setInterval(()=>{
       pos+=dir*speed;
       if(pos>=96){pos=96;dir=-1;} if(pos<=0){pos=0;dir=1;}
       cursor.style.left=pos+'%';
+      // Glow cursor when near zone
+      const zCenter=zl+11;const nearDist=Math.abs(pos-zCenter);
+      if(nearDist<14)cursor.style.boxShadow='0 0 '+(16-nearDist)+'px rgba(0,255,136,'+(0.3+0.5*(1-nearDist/14))+')';
+      else cursor.style.boxShadow='0 0 10px rgba(255,204,0,0.7)';
       drawQuenchVisual(pos);
     },30);
   });
@@ -2037,19 +2042,20 @@ drawQuenchVisual(0);
   quenchBtn.addEventListener('click',()=>{
     if(!active)return;
     active=false; clearInterval(timer); quenchBtn.disabled=true; startBtn.disabled=false;
+    cursor.style.boxShadow='0 0 10px rgba(255,204,0,0.7)';
     const s=getQuenchSword();if(!s)return;
-    const zl=parseFloat(zone.style.left), zw=16, zCenter=zl+zw/2;
+    const zl=parseFloat(zone.style.left), zw=22, zCenter=zl+zw/2;
     const dist=Math.abs(pos-zCenter);
-    let bonus,text;
-    if(dist<4){bonus=12;text='Perfect quench! Durability +12';}
-    else if(dist<10){bonus=7;text='Good quench! Durability +7';}
-    else if(dist<18){bonus=3;text='Okay quench. Durability +3';}
-    else{bonus=-5;text='Bad quench! Durability -5 (cracked!)';}
+    let bonus,text,statusColor;
+    if(dist<6){bonus=12;text='✨ PERFECT QUENCH! +12 Durability';statusColor='#44ffaa';}
+    else if(dist<13){bonus=7;text='👍 Good quench! +7 Durability';statusColor='#88cc44';}
+    else if(dist<22){bonus=3;text='Okay quench. +3 Durability';statusColor='#ccaa33';}
+    else{bonus=-3;text='💥 Bad quench! -3 Durability (cracked!)';statusColor='#cc4444';}
     s.sw.durability+=bonus;
     if(s.sw.durability<1)s.sw.durability=1;
     s.sw.quenched=true;
     s.sw.score=s.sw.damage+s.sw.durability-s.sw.weight;
-    st.textContent=text+' (DUR now '+s.sw.durability+')';
+    st.innerHTML='<span style="color:'+statusColor+';font-weight:bold;">'+text+'</span><br><span style="color:#888;font-size:0.8rem;">DUR now '+s.sw.durability+'</span>';
     refreshQuenchInternal();
   });
 })();
