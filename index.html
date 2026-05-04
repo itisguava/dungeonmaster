@@ -2321,11 +2321,9 @@ window.buyItem=function(id){
   if(gold<item.price){document.getElementById('shopStatus').textContent='Not enough gold!';return;}
   updateGold(-item.price);
   unlocked[item.key]=true;
-  // Enable the option in dropdowns
+  // Enable the option in ALL dropdowns (metals, hilts, techniques)
   document.querySelectorAll('.locked-material').forEach(opt=>{
-    const val=opt.value;
-    if(val===item.key||(item.key==='legendary'&&val==='legendary'))
-      if(unlocked[val]){opt.disabled=false;opt.textContent=opt.textContent.replace(' (Locked)','');}
+    if(opt.value===item.key&&unlocked[opt.value]){opt.disabled=false;opt.textContent=opt.textContent.replace(' (Locked)','');}
   });
   document.getElementById('shopStatus').textContent='Unlocked '+item.name+'!';
   refreshShop();
@@ -4557,6 +4555,54 @@ const SECRET_CODES = {
   'DEVMODE': {
     name: 'Dev Sword', desc: 'Testing blade — 999 DMG, unbreakable',
     sword: {metal:'adamantine',length:'greatsword',hilt:'royal',process:'legendary',damage:999,durability:9999,weight:1,score:999,grade:'S',title:'Dev Blade',metalBonus:0,lengthBonus:0,techBonus:0,quenched:true,enchantment:'celestial'}
+  },
+  'PHOENIX': {
+    name: 'Phoenix Talon', desc: 'Reborn from ashes, burns eternally',
+    sword: {metal:'dragonbone',length:'normal',hilt:'ornate',process:'legendary',damage:58,durability:40,weight:6,score:92,grade:'S',title:'Phoenix Talon',metalBonus:9,lengthBonus:8,techBonus:10,quenched:true,enchantment:'phoenix'}
+  },
+  'BLOODMOON': {
+    name: 'Blood Moon Reaper', desc: 'Forged under a blood moon, drains life',
+    sword: {metal:'cursedmetal',length:'greatsword',hilt:'ornate',process:'legendary',damage:72,durability:22,weight:15,score:79,grade:'A',title:'Blood Moon Reaper',metalBonus:9,lengthBonus:10,techBonus:10,quenched:true,enchantment:'vampiric'}
+  },
+  'MJOLNIR': {
+    name: 'Stormbreaker', desc: 'Channels the fury of a thousand storms',
+    sword: {metal:'titanium',length:'long',hilt:'royal',process:'legendary',damage:60,durability:48,weight:9,score:99,grade:'S',title:'Stormbreaker',metalBonus:9,lengthBonus:10,techBonus:10,quenched:true,enchantment:'lightning'}
+  },
+  'CHAOSSWORD': {
+    name: 'Entropy Blade', desc: 'Reality bends around this unstable weapon',
+    sword: {metal:'soulforge',length:'normal',hilt:'royal',process:'legendary',damage:45,durability:45,weight:5,score:85,grade:'A',title:'Entropy Blade',metalBonus:9,lengthBonus:10,techBonus:10,quenched:true,enchantment:'chaos'}
+  },
+  'TIMEBLADE': {
+    name: 'Chrono Edge', desc: 'Cuts through time itself',
+    sword: {metal:'mithril',length:'short',hilt:'royal',process:'legendary',damage:40,durability:55,weight:3,score:92,grade:'S',title:'Chrono Edge',metalBonus:9,lengthBonus:10,techBonus:10,quenched:true,enchantment:'timewarp'}
+  },
+  'VENOMFANG': {
+    name: 'Serpent Fang', desc: 'Dripping with lethal venom',
+    sword: {metal:'shadowsteel',length:'short',hilt:'ornate',process:'careful',damage:38,durability:30,weight:4,score:64,grade:'B',title:'Serpent Fang',metalBonus:5,lengthBonus:8,techBonus:8,quenched:true,enchantment:'poison'}
+  },
+  'GODFORGE': {
+    name: 'Godforged Blade', desc: 'The rarest enchantment, guaranteed',
+    sword: {metal:'soulforge',length:'long',hilt:'royal',process:'legendary',damage:80,durability:60,weight:7,score:133,grade:'S',title:'Godforged Blade',metalBonus:10,lengthBonus:10,techBonus:10,quenched:true,enchantment:'godforge'}
+  },
+  'GRAVITYWELL': {
+    name: 'Singularity', desc: 'Pulls everything toward its edge',
+    sword: {metal:'adamantine',length:'normal',hilt:'ornate',process:'legendary',damage:44,durability:50,weight:12,score:82,grade:'A',title:'Singularity',metalBonus:9,lengthBonus:10,techBonus:10,quenched:true,enchantment:'gravity'}
+  },
+  'BOOMSTICK': {
+    name: 'Blast Hammer', desc: 'Enemies explode on death. Literally.',
+    sword: {metal:'dragonbone',length:'greatsword',hilt:'standard',process:'legendary',damage:62,durability:28,weight:16,score:74,grade:'A',title:'Blast Hammer',metalBonus:9,lengthBonus:10,techBonus:10,quenched:true,enchantment:'explosive'}
+  },
+  'LEVELUP': {
+    name: 'XP Boost', desc: '+500 XP! Level up faster.',
+    xp: 500
+  },
+  'SKILLPOINT': {
+    name: 'Skill Bonus', desc: '+3 Skill Points!',
+    skillPts: 3
+  },
+  'MATERIALDROP': {
+    name: 'Material Pack', desc: 'A bundle of rare dungeon materials!',
+    materials: true
   }
 };
 
@@ -4605,6 +4651,19 @@ document.getElementById('redeemCodeBtn').addEventListener('click', () => {
     result.innerHTML = '<span style="color:#ffdd44;">CODE REDEEMED!</span><br>' + secret.name + ' — ' + secret.desc;
     result.style.color = '#ffdd44';
     refreshShop();
+  } else if (secret.xp) {
+    if(typeof addXP==='function')addXP(secret.xp);
+    result.innerHTML = '<span style="color:#cc88ff;">CODE REDEEMED!</span><br>' + secret.name + ' — +' + secret.xp + ' XP!';
+    result.style.color = '#cc88ff';
+  } else if (secret.skillPts) {
+    if(typeof skillPoints!=='undefined')skillPoints+=secret.skillPts;
+    result.innerHTML = '<span style="color:#ffdd44;">CODE REDEEMED!</span><br>' + secret.name + ' — +' + secret.skillPts + ' Skill Points!';
+    result.style.color = '#ffdd44';
+  } else if (secret.materials) {
+    addMaterial('Soul Shard',2);addMaterial('Shadow Ore',2);addMaterial('Deep Crystals',2);addMaterial('Cave Crystal',2);addMaterial('Cursed Gem',1);addMaterial('Glowmoss Extract',2);
+    result.innerHTML = '<span style="color:#44dd77;">CODE REDEEMED!</span><br>' + secret.name + ' — Rare materials added to your stash!';
+    result.style.color = '#44dd77';
+    refreshMaterialDisplay();
   }
   refreshInventory();
   if(typeof saveGame==='function')saveGame();
@@ -6643,11 +6702,12 @@ function loadGame(){
     }
     if(s.charState){Object.keys(s.charState).forEach(k=>{charState[k]=s.charState[k];});}
     if(s.charName&&document.getElementById('charName'))document.getElementById('charName').value=s.charName;
-    // Re-enable unlocked shop materials
+    // Re-enable unlocked shop materials, hilts, techniques
     Object.keys(unlocked).forEach(k=>{
       if(unlocked[k]){
-        const opt=document.querySelector('select#metal option[value="'+k+'"]');
-        if(opt){opt.disabled=false;opt.textContent=opt.textContent.replace(' (Locked)','');}
+        document.querySelectorAll('.locked-material').forEach(opt=>{
+          if(opt.value===k){opt.disabled=false;opt.textContent=opt.textContent.replace(' (Locked)','');}
+        });
       }
     });
     return true;
