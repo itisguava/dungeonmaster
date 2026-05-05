@@ -915,6 +915,11 @@
       <h3>All Abilities</h3>
       <div id="abilityGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin:8px 0;"></div>
     </div>
+    <div class="panel wide" id="tenShadowsPanel" style="display:none;">
+      <h2>🔮 Ten Shadows Technique</h2>
+      <p style="color:#888;font-size:0.82rem;">Summon shikigami in the dungeon. Press 5-9 to summon (40 mana each). Complete quests to unlock new shikigami.</p>
+      <div id="shikigamiGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin:8px 0;"></div>
+    </div>
   </div>
 </div>
 
@@ -1941,7 +1946,9 @@ function calculateSword(){
   const hn={rough:'a rough leather grip',standard:'a solid wrapped hilt',ornate:'an ornate gilded hilt',royal:'a royal, jewel-encrusted hilt'}[hilt];
   const wtName=wt.name.toLowerCase();
   document.getElementById('result').textContent=title+' ('+grade+', score '+score+')\nA '+ln+' '+wtName+' of '+mn+' with '+hn+'.\nDMG '+dmg+' | DUR '+dur+' | WGT '+wgt+'\nReach: '+wt.reach+'/5 | Speed: '+wt.speed+'/5'+(wt.special!=='none'?' | Passive: '+wt.special:'')+'\nBonuses: Metal '+metalBonus+' Size '+lengthBonus+' Tech '+techBonus;
-  lastSword={metal,length,hilt,process,weaponType:weaponType,damage:dmg,durability:dur,weight:wgt,score,grade,title,reach:wt.reach,speed:wt.speed,special:wt.special,metalBonus,lengthBonus,techBonus,quenched:false,enchantment:null};
+  lastSword={metal,length,hilt,process,weaponType:weaponType,damage:dmg,durability:dur,weight:wgt,score,grade,title,reach:wt.reach,speed:wt.speed,special:wt.special,metalBonus,lengthBonus,techBonus,quenched:false,enchantment:null,
+    design:{bladelen:+document.getElementById('dBladelen').value,bladeWid:+document.getElementById('dBladeWid').value,bladeTap:+document.getElementById('dBladeTap').value,bladeCrv:+document.getElementById('dBladeCrv').value,curveDir:document.getElementById('dCurveDir').value,fuller:+document.getElementById('dFuller').value,crossW:+document.getElementById('dCrossW').value,crossStyle:document.getElementById('dCrossStyle').value,gripLen:+document.getElementById('dGripLen').value,pommelStyle:document.getElementById('dPommelStyle').value,pomSize:+document.getElementById('dPomSize').value,edgeType:document.getElementById('dEdgeType').value,bladeFinish:document.getElementById('dBladeFinish').value,engraving:document.getElementById('dEngraving').value,bladeTip:document.getElementById('dBladeTip').value,gripWrap:document.getElementById('dGripWrap').value,gemInlay:document.getElementById('dGemInlay').value}
+  };
   hasForged=true;
   if(typeof gameStats!=='undefined')gameStats.swordsForged++;
   if(typeof addXP==='function')addXP(15+score);
@@ -2003,7 +2010,7 @@ drawQuenchVisual(0);
   const startBtn=document.getElementById('startQuench'), quenchBtn=document.getElementById('quenchNow');
   const st=document.getElementById('quenchStatus'), info=document.getElementById('quenchSwordInfo');
   let pos=0, dir=1, timer=null, active=false;
-  const speed=0.6;
+  const speed=0.9;
   function refreshQuenchInternal(){
     populateSwordSelects();
     const s=getQuenchSword();
@@ -2021,10 +2028,10 @@ drawQuenchVisual(0);
     if(active)return;
     active=true; pos=0; dir=1; quenchBtn.disabled=false; startBtn.disabled=true;
     const zl=15+Math.random()*50;
-    zone.style.left=zl+'%'; zone.style.width='22%';
+    zone.style.left=zl+'%'; zone.style.width='18%';
     // Move the track gradient so the green center matches the zone
     const track=document.getElementById('quenchTrack');
-    const zMid=zl+11;
+    const zMid=zl+9;
     track.style.background='linear-gradient(90deg,#1a2244 0%,#223366 '+(zMid-20)+'%,#226655 '+(zMid-10)+'%,#33aa77 '+(zMid-3)+'%,#44ffaa '+zMid+'%,#33aa77 '+(zMid+3)+'%,#226655 '+(zMid+10)+'%,#662222 '+(zMid+25)+'%,#441111 100%)';
     st.textContent='Heating… quench in the sweet spot!';
     timer=setInterval(()=>{
@@ -2044,12 +2051,12 @@ drawQuenchVisual(0);
     active=false; clearInterval(timer); quenchBtn.disabled=true; startBtn.disabled=false;
     cursor.style.boxShadow='0 0 10px rgba(255,204,0,0.7)';
     const s=getQuenchSword();if(!s)return;
-    const zl=parseFloat(zone.style.left), zw=22, zCenter=zl+zw/2;
+    const zl=parseFloat(zone.style.left), zw=18, zCenter=zl+zw/2;
     const dist=Math.abs(pos-zCenter);
     let bonus,text,statusColor;
-    if(dist<6){bonus=12;text='✨ PERFECT QUENCH! +12 Durability';statusColor='#44ffaa';}
-    else if(dist<13){bonus=7;text='👍 Good quench! +7 Durability';statusColor='#88cc44';}
-    else if(dist<22){bonus=3;text='Okay quench. +3 Durability';statusColor='#ccaa33';}
+    if(dist<4){bonus=12;text='✨ PERFECT QUENCH! +12 Durability';statusColor='#44ffaa';}
+    else if(dist<10){bonus=7;text='👍 Good quench! +7 Durability';statusColor='#88cc44';}
+    else if(dist<18){bonus=3;text='Okay quench. +3 Durability';statusColor='#ccaa33';}
     else{bonus=-3;text='💥 Bad quench! -3 Durability (cracked!)';statusColor='#cc4444';}
     s.sw.durability+=bonus;
     if(s.sw.durability<1)s.sw.durability=1;
@@ -2936,31 +2943,57 @@ window.previewSword=function(i){
     'DMG '+sw.damage+' | DUR '+sw.durability+' | WGT '+sw.weight+'<br>'+
     sw.metal+' '+sw.length+(sw.enchantment?' | <span style="color:#c89b3c;">'+sw.enchantment+'</span>':'')+
     (sw.quenched?' | <span style="color:#4488cc;">quenched</span>':'');
-  // Draw sword on preview canvas
+  // Draw sword using saved design if available
   const canvas=document.getElementById('inventorySwordCanvas');
-  const ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height;
-  ctx.clearRect(0,0,W,H);
-  const mc2={iron:{blade:'#a8a8a8',bladeLight:'#c8c8c8',bladeDark:'#777',fuller:'#888'},steel:{blade:'#c0c8d8',bladeLight:'#dde4f0',bladeDark:'#8899aa',fuller:'#99aacc'},damascus:{blade:'#b0b0b0',bladeLight:'#d8d8d8',bladeDark:'#666',fuller:'#999'},mithril:{blade:'#77ccee',bladeLight:'#aaeeff',bladeDark:'#449abb',fuller:'#66bbdd'},titanium:{blade:'#c8ccd4',bladeLight:'#e8ecf4',bladeDark:'#8890a0',fuller:'#aab0c0'},obsidian:{blade:'#222230',bladeLight:'#33334a',bladeDark:'#111118',fuller:'#2a2a3a'},dragonbone:{blade:'#d4c8a0',bladeLight:'#eee4c8',bladeDark:'#a09060',fuller:'#c0b080'},adamantine:{blade:'#446688',bladeLight:'#6688aa',bladeDark:'#224466',fuller:'#3a5a7a'},deepstone:{blade:'#667788',bladeLight:'#8899aa',bladeDark:'#445566',fuller:'#557788'},glowmetal:{blade:'#55cc88',bladeLight:'#77eebb',bladeDark:'#33aa66',fuller:'#44bb77'},cavecrystal:{blade:'#99bbdd',bladeLight:'#bbeeff',bladeDark:'#6699bb',fuller:'#88aacc'},shadowsteel:{blade:'#333344',bladeLight:'#444466',bladeDark:'#111122',fuller:'#222233'},soulforge:{blade:'#88aacc',bladeLight:'#aaccee',bladeDark:'#5588aa',fuller:'#7799bb'},cursedmetal:{blade:'#553344',bladeLight:'#774466',bladeDark:'#331122',fuller:'#442233'}}[sw.metal]||{blade:'#a8a8a8',bladeLight:'#c8c8c8',bladeDark:'#777',fuller:'#888'};
-  const hc2={rough:{cross:'#8a7a5a',pommel:'#7a6a4a',grip:'#5a3a1a',gripWrap:'#6b4a2b'},standard:{cross:'#aa9944',pommel:'#997733',grip:'#5a3520',gripWrap:'#704828'},ornate:{cross:'#ccaa33',pommel:'#ddbb44',grip:'#3a1a2a',gripWrap:'#6b2244'},royal:{cross:'#eebb22',pommel:'#ffcc33',grip:'#1a1040',gripWrap:'#2a1860'}}[sw.hilt]||{cross:'#8a7a5a',pommel:'#7a6a4a',grip:'#5a3a1a',gripWrap:'#6b4a2b'};
-  const cx2=W/2, bLen2={short:60,normal:90,long:120,greatsword:150}[sw.length]||90;
-  const bWid2=12,tipY2=10,beY2=tipY2+bLen2;
-  // Blade
-  ctx.beginPath();ctx.moveTo(cx2,tipY2);ctx.lineTo(cx2-3,tipY2+6);ctx.lineTo(cx2-bWid2/2,beY2);ctx.lineTo(cx2+bWid2/2,beY2);ctx.lineTo(cx2+3,tipY2+6);ctx.closePath();
-  const bg2=ctx.createLinearGradient(cx2-bWid2/2,0,cx2+bWid2/2,0);
-  bg2.addColorStop(0,mc2.bladeDark);bg2.addColorStop(0.3,mc2.bladeLight);bg2.addColorStop(0.5,mc2.blade);bg2.addColorStop(0.7,mc2.bladeLight);bg2.addColorStop(1,mc2.bladeDark);
-  ctx.fillStyle=bg2;ctx.fill();ctx.strokeStyle=mc2.bladeLight;ctx.lineWidth=0.5;ctx.stroke();
-  // Enchantment glow
-  if(sw.enchantment){
-    const ec2={fire:'rgba(255,80,20,0.3)',ice:'rgba(80,180,255,0.3)',lightning:'rgba(255,255,80,0.3)',poison:'rgba(80,255,80,0.3)',vampiric:'rgba(200,40,80,0.3)',holy:'rgba(255,255,200,0.4)',shadow:'rgba(80,40,120,0.35)',void:'rgba(30,0,60,0.4)',celestial:'rgba(255,240,200,0.4)'}[sw.enchantment];
-    if(ec2){ctx.save();ctx.shadowColor=ec2.replace('0.3','0.8').replace('0.4','0.9');ctx.shadowBlur=12;ctx.fillStyle=ec2;ctx.fillRect(cx2-bWid2/2-3,tipY2,bWid2+6,bLen2);ctx.restore();}
+  if(sw.design){
+    // Save current form values
+    const fields=['dBladelen','dBladeWid','dBladeTap','dBladeCrv','dCurveDir','dFuller','dCrossW','dCrossStyle','dGripLen','dPommelStyle','dPomSize','dEdgeType','dBladeFinish','dEngraving','dBladeTip','dGripWrap','dGemInlay','weaponType','metal','hilt'];
+    const saved={};fields.forEach(f=>{const el=document.getElementById(f);if(el)saved[f]=el.value;});
+    // Set form to sword's design
+    const d=sw.design;
+    const setVal=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v;};
+    setVal('dBladelen',d.bladelen);setVal('dBladeWid',d.bladeWid);setVal('dBladeTap',d.bladeTap);
+    setVal('dBladeCrv',d.bladeCrv);setVal('dCurveDir',d.curveDir);setVal('dFuller',d.fuller);
+    setVal('dCrossW',d.crossW);setVal('dCrossStyle',d.crossStyle);setVal('dGripLen',d.gripLen);
+    setVal('dPommelStyle',d.pommelStyle);setVal('dPomSize',d.pomSize);setVal('dEdgeType',d.edgeType);
+    setVal('dBladeFinish',d.bladeFinish);setVal('dEngraving',d.engraving);setVal('dBladeTip',d.bladeTip);
+    setVal('dGripWrap',d.gripWrap);setVal('dGemInlay',d.gemInlay);
+    setVal('weaponType',sw.weaponType||'sword');setVal('metal',sw.metal);setVal('hilt',sw.hilt);
+    // Adjust canvas height for length
+    canvas.height=sw.length==='greatsword'?500:sw.length==='long'?440:380;
+    // Draw using the main drawSword on the preview canvas
+    const mainCanvas=document.getElementById('swordCanvas');
+    const origW=mainCanvas.width,origH=mainCanvas.height;
+    mainCanvas.width=canvas.width;mainCanvas.height=canvas.height;
+    drawSword();
+    // Copy to preview canvas
+    const pctx=canvas.getContext('2d');pctx.clearRect(0,0,canvas.width,canvas.height);
+    pctx.drawImage(mainCanvas,0,0);
+    // Restore main canvas and form values
+    mainCanvas.width=origW;mainCanvas.height=origH;
+    fields.forEach(f=>{const el=document.getElementById(f);if(el&&saved[f]!==undefined)el.value=saved[f];});
+    drawSword(); // redraw main canvas with original values
+  } else {
+    // Fallback: draw generic sword for old swords without design data
+    const ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height;
+    ctx.clearRect(0,0,W,H);
+    const mc2={iron:{blade:'#a8a8a8',bladeLight:'#c8c8c8',bladeDark:'#777',fuller:'#888'},steel:{blade:'#c0c8d8',bladeLight:'#dde4f0',bladeDark:'#8899aa',fuller:'#99aacc'},damascus:{blade:'#b0b0b0',bladeLight:'#d8d8d8',bladeDark:'#666',fuller:'#999'},mithril:{blade:'#77ccee',bladeLight:'#aaeeff',bladeDark:'#449abb',fuller:'#66bbdd'},titanium:{blade:'#c8ccd4',bladeLight:'#e8ecf4',bladeDark:'#8890a0',fuller:'#aab0c0'},obsidian:{blade:'#222230',bladeLight:'#33334a',bladeDark:'#111118',fuller:'#2a2a3a'},dragonbone:{blade:'#d4c8a0',bladeLight:'#eee4c8',bladeDark:'#a09060',fuller:'#c0b080'},adamantine:{blade:'#446688',bladeLight:'#6688aa',bladeDark:'#224466',fuller:'#3a5a7a'},deepstone:{blade:'#667788',bladeLight:'#8899aa',bladeDark:'#445566',fuller:'#557788'},glowmetal:{blade:'#55cc88',bladeLight:'#77eebb',bladeDark:'#33aa66',fuller:'#44bb77'},cavecrystal:{blade:'#99bbdd',bladeLight:'#bbeeff',bladeDark:'#6699bb',fuller:'#88aacc'},shadowsteel:{blade:'#333344',bladeLight:'#444466',bladeDark:'#111122',fuller:'#222233'},soulforge:{blade:'#88aacc',bladeLight:'#aaccee',bladeDark:'#5588aa',fuller:'#7799bb'},cursedmetal:{blade:'#553344',bladeLight:'#774466',bladeDark:'#331122',fuller:'#442233'}}[sw.metal]||{blade:'#a8a8a8',bladeLight:'#c8c8c8',bladeDark:'#777',fuller:'#888'};
+    const hc2={rough:{cross:'#8a7a5a',pommel:'#7a6a4a',grip:'#5a3a1a',gripWrap:'#6b4a2b'},standard:{cross:'#aa9944',pommel:'#997733',grip:'#5a3520',gripWrap:'#704828'},ornate:{cross:'#ccaa33',pommel:'#ddbb44',grip:'#3a1a2a',gripWrap:'#6b2244'},royal:{cross:'#eebb22',pommel:'#ffcc33',grip:'#1a1040',gripWrap:'#2a1860'}}[sw.hilt]||{cross:'#8a7a5a',pommel:'#7a6a4a',grip:'#5a3a1a',gripWrap:'#6b4a2b'};
+    const cx2=W/2, bLen2={short:60,normal:90,long:120,greatsword:150}[sw.length]||90;
+    const bWid2=12,tipY2=10,beY2=tipY2+bLen2;
+    ctx.beginPath();ctx.moveTo(cx2,tipY2);ctx.lineTo(cx2-3,tipY2+6);ctx.lineTo(cx2-bWid2/2,beY2);ctx.lineTo(cx2+bWid2/2,beY2);ctx.lineTo(cx2+3,tipY2+6);ctx.closePath();
+    const bg2=ctx.createLinearGradient(cx2-bWid2/2,0,cx2+bWid2/2,0);
+    bg2.addColorStop(0,mc2.bladeDark);bg2.addColorStop(0.3,mc2.bladeLight);bg2.addColorStop(0.5,mc2.blade);bg2.addColorStop(0.7,mc2.bladeLight);bg2.addColorStop(1,mc2.bladeDark);
+    ctx.fillStyle=bg2;ctx.fill();ctx.strokeStyle=mc2.bladeLight;ctx.lineWidth=0.5;ctx.stroke();
+    if(sw.enchantment){
+      const ec2={fire:'rgba(255,80,20,0.3)',ice:'rgba(80,180,255,0.3)',lightning:'rgba(255,255,80,0.3)',poison:'rgba(80,255,80,0.3)',vampiric:'rgba(200,40,80,0.3)',holy:'rgba(255,255,200,0.4)',shadow:'rgba(80,40,120,0.35)',void:'rgba(30,0,60,0.4)',celestial:'rgba(255,240,200,0.4)'}[sw.enchantment];
+      if(ec2){ctx.save();ctx.shadowColor=ec2.replace('0.3','0.8').replace('0.4','0.9');ctx.shadowBlur=12;ctx.fillStyle=ec2;ctx.fillRect(cx2-bWid2/2-3,tipY2,bWid2+6,bLen2);ctx.restore();}
+    }
+    ctx.fillStyle=hc2.cross;ctx.beginPath();ctx.roundRect(cx2-18,beY2,36,6,3);ctx.fill();
+    ctx.fillStyle=hc2.grip;ctx.beginPath();ctx.roundRect(cx2-4,beY2+6,8,22,2);ctx.fill();
+    ctx.strokeStyle=hc2.gripWrap;ctx.lineWidth=1;for(let y=beY2+9;y<beY2+26;y+=5){ctx.beginPath();ctx.moveTo(cx2-4,y);ctx.lineTo(cx2+4,y+2);ctx.stroke();}
+    ctx.fillStyle=hc2.pommel;ctx.beginPath();ctx.arc(cx2,beY2+32,5,0,Math.PI*2);ctx.fill();
   }
-  // Guard
-  ctx.fillStyle=hc2.cross;ctx.beginPath();ctx.roundRect(cx2-18,beY2,36,6,3);ctx.fill();
-  // Grip
-  ctx.fillStyle=hc2.grip;ctx.beginPath();ctx.roundRect(cx2-4,beY2+6,8,22,2);ctx.fill();
-  ctx.strokeStyle=hc2.gripWrap;ctx.lineWidth=1;for(let y=beY2+9;y<beY2+26;y+=5){ctx.beginPath();ctx.moveTo(cx2-4,y);ctx.lineTo(cx2+4,y+2);ctx.stroke();}
-  // Pommel
-  ctx.fillStyle=hc2.pommel;ctx.beginPath();ctx.arc(cx2,beY2+32,5,0,Math.PI*2);ctx.fill();
 };
 
 // ══════════════════════════════════════
@@ -4609,6 +4642,10 @@ const SECRET_CODES = {
   'MATERIALDROP': {
     name: 'Material Pack', desc: 'A bundle of rare dungeon materials!',
     materials: true
+  },
+  'TENSHADOWS': {
+    name: 'Ten Shadows Technique', desc: 'Unlock the Ten Shadows! Summon shikigami in the dungeon. Complete quests to unlock each one.',
+    tenShadows: true
   }
 };
 
@@ -4670,6 +4707,12 @@ document.getElementById('redeemCodeBtn').addEventListener('click', () => {
     result.innerHTML = '<span style="color:#44dd77;">CODE REDEEMED!</span><br>' + secret.name + ' — Rare materials added to your stash!';
     result.style.color = '#44dd77';
     refreshMaterialDisplay();
+  } else if (secret.tenShadows) {
+    tenShadowsUnlocked=true;
+    result.innerHTML = '<span style="color:#cc88ff;">🔮 TEN SHADOWS TECHNIQUE UNLOCKED!</span><br>Press 5-9 in dungeon to summon shikigami.<br>Complete quests to unlock each one!<br><span style="color:#888;font-size:0.8rem;">First shikigami (Nue) is free — others require quests.</span>';
+    result.style.color = '#cc88ff';
+    unlockedShikigami['toad']=true; // First one free
+    addDungeonLog('🔮 Ten Shadows Technique unlocked! Press 5-9 to summon shikigami.');
   }
   refreshInventory();
   if(typeof saveGame==='function')saveGame();
@@ -4990,14 +5033,20 @@ function dungeonTick(){
   const modDefMult=dungeon.modifier&&dungeon.modifier.effect.defMult?dungeon.modifier.effect.defMult:1;
   // Time stop countdown
   if(dungeon._timeStop>0)dungeon._timeStop--;
-  // Ally wolf AI
-  if(dungeon.allies){for(const ally of dungeon.allies){if(!ally.alive)continue;
+  // Ally AI (wolves, shikigami, etc)
+  if(dungeon.allies){for(let ai=dungeon.allies.length-1;ai>=0;ai--){const ally=dungeon.allies[ai];if(!ally.alive)continue;
     let nearE=null,nearD=Infinity;
     for(const e of dungeon.enemies){if(!e.alive)continue;const d=Math.sqrt((ally.x-e.x)**2+(ally.y-e.y)**2);if(d<nearD){nearD=d;nearE=e;}}
-    if(nearE&&nearD<80){const ang=Math.atan2(nearE.y-ally.y,nearE.x-ally.x);ally.x+=Math.cos(ang)*2;ally.y+=Math.sin(ang)*2;
-      if(nearD<14){ally.atkTimer--;if(ally.atkTimer<=0){ally.atkTimer=15;nearE.curHp-=ally.dmg;spawnFloatingNumber(nearE.x,nearE.y-10,'-'+ally.dmg,'#88aacc');
+    const allySpeed=ally.speed||2;
+    if(nearE&&nearD<(ally.aggroRange||80)){const ang=Math.atan2(nearE.y-ally.y,nearE.x-ally.x);ally.x+=Math.cos(ang)*allySpeed;ally.y+=Math.sin(ang)*allySpeed;
+      if(nearD<14){ally.atkTimer--;if(ally.atkTimer<=0){ally.atkTimer=ally.atkRate||15;const admg=ally.dmg||10;nearE.curHp-=admg;spawnFloatingNumber(nearE.x,nearE.y-10,'-'+admg,ally.color||'#88aacc');
         if(nearE.curHp<=0){nearE.alive=false;spawnDungeonParticle(nearE.x,nearE.y,nearE.data.color||'#cc3333',10,5);spawnDungeonParticle(nearE.x,nearE.y,'#ffffff',5,3);recordEnemy(nearE.data.name,nearE.data);trackKill();}}}
     }else{const ang2=Math.atan2(dungeon.py-ally.y,dungeon.px-ally.x);ally.x+=Math.cos(ang2)*1.5;ally.y+=Math.sin(ang2)*1.5;}
+    // Allies can take damage from nearby enemies
+    for(const e of dungeon.enemies){if(!e.alive)continue;const ed=Math.sqrt((ally.x-e.x)**2+(ally.y-e.y)**2);
+      if(ed<12){if(!ally._hitCd)ally._hitCd=0;ally._hitCd--;if(ally._hitCd<=0){ally._hitCd=25;const eDmg=Math.max(1,Math.round((e.data.atk||5)*sc*0.4));ally.hp-=eDmg;spawnFloatingNumber(ally.x,ally.y-10,'-'+eDmg,'#ff6644');
+        if(ally.hp<=0){ally.alive=false;spawnDungeonParticle(ally.x,ally.y,ally.color||'#88aacc',8,4);addDungeonLog((ally.name||'Ally')+' was defeated!');}}}
+    }
   }}
   for(const e of dungeon.enemies){
     if(!e.alive)continue;
@@ -5203,7 +5252,8 @@ function dungeonTick(){
         spawnFloatingNumber(e.x,e.y-5,'+'+g+'g','#ffdd44');
         addDungeonLog('Killed '+e.data.name+'! +'+g+'g');
         if(e.golden){addDungeonLog('✨ GOLDEN ENEMY! Massive gold bonus!');spawnDungeonParticle(e.x,e.y,'#ffdd44',20,6);spawnDungeonParticle(e.x,e.y,'#ffee88',15,5);}
-        if(e.isBoss){addDungeonLog('👑 BOSS DEFEATED! Massive bonus!');if(typeof addXP==='function')addXP(100+dungeon.floor*20);spawnDungeonParticle(e.x,e.y,'#ffdd44',20,6);spawnDungeonParticle(e.x,e.y,'#ff4444',15,5);}
+        if(e.isBoss){addDungeonLog('👑 BOSS DEFEATED! Massive bonus!');if(typeof addXP==='function')addXP(100+dungeon.floor*20);spawnDungeonParticle(e.x,e.y,'#ffdd44',20,6);spawnDungeonParticle(e.x,e.y,'#ff4444',15,5);dungeon._bossKills=(dungeon._bossKills||0)+1;}
+        if(typeof tickShikigamiQuests==='function')tickShikigamiQuests();
         if(sw.enchantment==='vampiric'){const h=Math.round(pd*0.2);dungeon.hp=Math.min(dungeon.maxHp,dungeon.hp+h);}
         // Warrior on-kill heal
         if(typeof getPlayerClass==='function'){const cl3=getPlayerClass();if(cl3.onKillHeal>0){dungeon.hp=Math.min(dungeon.maxHp,dungeon.hp+cl3.onKillHeal);}}
@@ -5523,10 +5573,52 @@ function drawDungeon(){
   drawDungeonParticles(ctx);
   // Draw floating damage numbers
   drawFloatingNumbers(ctx);
-  // Draw ally wolves
+  // Draw allies (wolves, shikigami)
   if(dungeon.allies){for(const ally of dungeon.allies){if(!ally.alive)continue;const ax=ally.x-dungeon.camX,ay=ally.y-dungeon.camY;
-    ctx.fillStyle='#88aacc';ctx.beginPath();ctx.ellipse(ax,ay-3,6,4,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(ax+4,ay-6,3,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#aaccee';ctx.beginPath();ctx.arc(ax+5,ay-6.5,1,0,Math.PI*2);ctx.fill();
+    const at=ally.type||'wolf';
+    if(at==='wolf'){
+      ctx.fillStyle=ally.color||'#88aacc';ctx.beginPath();ctx.ellipse(ax,ay-3,6,4,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(ax+4,ay-6,3,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#aaccee';ctx.beginPath();ctx.arc(ax+5,ay-6.5,1,0,Math.PI*2);ctx.fill();
+    }else if(at==='toad'){
+      ctx.fillStyle=ally.color||'#44aa44';ctx.beginPath();ctx.ellipse(ax,ay-2,8,5,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#66cc66';ctx.beginPath();ctx.arc(ax-3,ay-6,2.5,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(ax+3,ay-6,2.5,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#ffdd44';ctx.beginPath();ctx.arc(ax-3,ay-6.5,1,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(ax+3,ay-6.5,1,0,Math.PI*2);ctx.fill();
+    }else if(at==='serpent'){
+      ctx.fillStyle=ally.color||'#6644aa';for(let si=0;si<5;si++){const sx2=ax+Math.sin(Date.now()*0.004+si)*3;ctx.beginPath();ctx.arc(sx2,ay-si*3,3-si*0.3,0,Math.PI*2);ctx.fill();}
+      ctx.fillStyle='#ff4444';ctx.beginPath();ctx.arc(ax,ay-14,1,0,Math.PI*2);ctx.fill();
+    }else if(at==='elephant'){
+      ctx.fillStyle=ally.color||'#8899aa';ctx.beginPath();ctx.ellipse(ax,ay-4,10,7,0,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(ax+6,ay-9,5,0,Math.PI*2);ctx.fill();
+      ctx.fillRect(ax+9,ay-7,2,8);//trunk
+      ctx.fillRect(ax-8,ay+2,4,5);ctx.fillRect(ax-3,ay+2,4,5);ctx.fillRect(ax+2,ay+2,4,5);ctx.fillRect(ax+7,ay+2,4,5);
+    }else if(at==='rabbit'){
+      ctx.fillStyle=ally.color||'#ddddee';ctx.beginPath();ctx.ellipse(ax,ay-3,5,4,0,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(ax,ay-7,3,0,Math.PI*2);ctx.fill();
+      ctx.fillRect(ax-2,ay-12,2,6);ctx.fillRect(ax+1,ay-12,2,6);
+      ctx.fillStyle='#ff4466';ctx.beginPath();ctx.arc(ax,ay-7,1,0,Math.PI*2);ctx.fill();
+    }else if(at==='ox'){
+      ctx.fillStyle=ally.color||'#886644';ctx.beginPath();ctx.ellipse(ax,ay-3,9,6,0,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(ax+5,ay-8,4,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#aa9966';ctx.beginPath();ctx.moveTo(ax+2,ay-12);ctx.lineTo(ax,ay-17);ctx.lineTo(ax+4,ay-11);ctx.fill();
+      ctx.beginPath();ctx.moveTo(ax+7,ay-12);ctx.lineTo(ax+9,ay-17);ctx.lineTo(ax+5,ay-11);ctx.fill();
+    }else if(at==='tiger'){
+      ctx.fillStyle=ally.color||'#dd8833';ctx.beginPath();ctx.ellipse(ax,ay-3,7,5,0,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(ax+5,ay-7,4,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#443300';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(ax-4,ay-5);ctx.lineTo(ax-2,ay-1);ctx.stroke();ctx.beginPath();ctx.moveTo(ax+1,ay-5);ctx.lineTo(ax+3,ay-1);ctx.stroke();
+      ctx.fillStyle='#44ff44';ctx.beginPath();ctx.arc(ax+4,ay-7.5,1,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(ax+7,ay-7.5,1,0,Math.PI*2);ctx.fill();
+    }else if(at==='mahoraga'){
+      const mFloat=Math.sin(Date.now()*0.003)*2;
+      ctx.fillStyle=ally.color||'#cc8844';ctx.fillRect(ax-5,ay-12+mFloat,10,14);
+      ctx.beginPath();ctx.arc(ax,ay-15+mFloat,5,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#ffdd44';ctx.lineWidth=2;ctx.beginPath();ctx.arc(ax,ay-20+mFloat,7,0,Math.PI*2);ctx.stroke();//wheel
+      ctx.fillStyle='#222';ctx.beginPath();ctx.arc(ax-2,ay-15+mFloat,1.2,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(ax+2,ay-15+mFloat,1.2,0,Math.PI*2);ctx.fill();
+    }else{
+      ctx.fillStyle=ally.color||'#88aacc';ctx.beginPath();ctx.ellipse(ax,ay-3,6,4,0,0,Math.PI*2);ctx.fill();
+    }
+    // Ally HP bar
+    if(ally.maxHp){const ahpPct=Math.max(0,ally.hp/ally.maxHp);ctx.fillStyle='#333';ctx.fillRect(ax-8,ay+6,16,3);ctx.fillStyle=ahpPct>0.5?'#44cc44':'#cc4422';ctx.fillRect(ax-8,ay+6,16*ahpPct,3);}
+    // Ally name
+    if(ally.name){ctx.fillStyle=ally.color||'#88aacc';ctx.font='bold 6px Arial';ctx.textAlign='center';ctx.fillText(ally.name,ax,ay+14);}
   }}
   // Time stop visual overlay
   if(dungeon._timeStop>0){ctx.save();ctx.globalAlpha=0.1;ctx.fillStyle='#44ddcc';ctx.fillRect(0,0,W,H);ctx.restore();}
@@ -5580,7 +5672,7 @@ function refreshDungeon(){const need=document.getElementById('dungeonNeedSword')
   const sw=inventory[equippedIndex];const cl=typeof getPlayerClass==='function'?getPlayerClass():{name:'Warrior',icon:'⚔️'};
   if(eqInfo)eqInfo.innerHTML='<span style="color:#c89b3c;">'+sw.title+'</span> ['+sw.grade+'] DMG:'+sw.damage+' DUR:'+sw.durability+(sw.enchantment?' <span style="color:#cc88ff;">('+sw.enchantment+')</span>':'')+' | Class: <span style="color:#cc88ff;">'+cl.icon+' '+cl.name+'</span>';
   if(dungeon.active){ui.style.display='block';btn.style.display='none';drawDungeon();drawMinimap();}else{ui.style.display='none';btn.style.display='block';}}
-function startDungeon(){if(equippedIndex<0||!inventory[equippedIndex])return;const sw=inventory[equippedIndex];dungeon.floor=0;const bonusHp=typeof getSkillValue==='function'?getSkillValue('bonusHp',0):0;const ascHpMult=typeof getAscensionBonuses==='function'&&ascensionTier>0?getAscensionBonuses(ascensionTier).hpMult:1;const cl=typeof getPlayerClass==='function'?getPlayerClass():{hpMult:1,manaMult:1};dungeon.maxHp=Math.round((50+sw.durability*2+getTotalArmorStats().hp+bonusHp)*ascHpMult*cl.hpMult);dungeon.hp=dungeon.maxHp;dungeon.loot=[];dungeon.active=true;dungeon.facing='down';dungeon.walkFrame=0;dungeon.allies=[];dungeon._phoenixUsed=false;dungeon._eventDmgBuff=1;dungeon._eventDmgFlat=0;dungeon._eventGoldBuff=1;dungeon._paladinHitCount=0;const bonusMana=typeof getSkillValue==='function'?getSkillValue('bonusMana',0):0;playerMaxMana=Math.round((100+bonusMana)*cl.manaMult);playerMana=playerMaxMana;dungeonShield=0;berserkCounter=0;thornsCounter=0;dungeon._hasRevive=false;dungeon._timeStop=0;if(typeof gameStats!=='undefined')gameStats.dungeonsAttempted++;if(typeof applyChallengeStart==='function')applyChallengeStart();loadFloor(0);const clId=typeof getClassId==='function'?getClassId():'warrior';document.getElementById('dungeonLog').textContent=cl.icon||'⚔️'+' '+CLASSES[clId].name+' enters the '+FLOOR_THEMES[0].name+'...\n';refreshDungeon();if(dungeon.gameLoop)clearInterval(dungeon.gameLoop);dungeon.gameLoop=setInterval(dungeonTick,1000/30);}
+function startDungeon(){if(equippedIndex<0||!inventory[equippedIndex])return;const sw=inventory[equippedIndex];dungeon.floor=0;const bonusHp=typeof getSkillValue==='function'?getSkillValue('bonusHp',0):0;const ascHpMult=typeof getAscensionBonuses==='function'&&ascensionTier>0?getAscensionBonuses(ascensionTier).hpMult:1;const cl=typeof getPlayerClass==='function'?getPlayerClass():{hpMult:1,manaMult:1};dungeon.maxHp=Math.round((50+sw.durability*2+getTotalArmorStats().hp+bonusHp)*ascHpMult*cl.hpMult);dungeon.hp=dungeon.maxHp;dungeon.loot=[];dungeon.active=true;dungeon.facing='down';dungeon.walkFrame=0;dungeon.allies=[];dungeon._phoenixUsed=false;dungeon._eventDmgBuff=1;dungeon._eventDmgFlat=0;dungeon._eventGoldBuff=1;dungeon._paladinHitCount=0;dungeon._dodgeCount=0;dungeon._bossKills=0;dungeon._noHealRun=true;const bonusMana=typeof getSkillValue==='function'?getSkillValue('bonusMana',0):0;playerMaxMana=Math.round((100+bonusMana)*cl.manaMult);playerMana=playerMaxMana;dungeonShield=0;berserkCounter=0;thornsCounter=0;dungeon._hasRevive=false;dungeon._timeStop=0;if(typeof gameStats!=='undefined')gameStats.dungeonsAttempted++;if(typeof applyChallengeStart==='function')applyChallengeStart();loadFloor(0);const clId=typeof getClassId==='function'?getClassId():'warrior';document.getElementById('dungeonLog').textContent=cl.icon||'⚔️'+' '+CLASSES[clId].name+' enters the '+FLOOR_THEMES[0].name+'...\n';refreshDungeon();if(dungeon.gameLoop)clearInterval(dungeon.gameLoop);dungeon.gameLoop=setInterval(dungeonTick,1000/30);}
 function loadFloor(floor){dungeon.floor=floor;const gen=genDungeon(floor);dungeon.map=gen.map;dungeon.enemies=gen.enemies;dungeon.chests=gen.chests;dungeon.npcs=gen.npcs||[];dungeon.puzzles=gen.puzzles||[];dungeon.events=gen.events||[];dungeon.px=gen.spawnX;dungeon.py=gen.spawnY;
   dungeon.explored=[];for(let y=0;y<DH;y++){dungeon.explored[y]=[];for(let x=0;x<DW;x++)dungeon.explored[y][x]=false;}
   document.getElementById('dFloorNum').textContent=(floor+1);
@@ -5619,7 +5711,10 @@ function endDungeon(success){
   if(!success&&dungeon._hasRevive){dungeon._hasRevive=false;dungeon.hp=Math.round(dungeon.maxHp*0.5);addDungeonLog('🌟 Second Wind! Revived at 50% HP!');updateDungeonHp();return;}
   dungeon.active=false;if(dungeon.gameLoop){clearInterval(dungeon.gameLoop);dungeon.gameLoop=null;}if(!success&&typeof playSFX==='function')playSFX('death','C1','4n');if(typeof gameStats!=='undefined'){if(dungeon.floor+1>gameStats.highestFloor)gameStats.highestFloor=dungeon.floor+1;}if(dungeon.floor>endlessRecord)endlessRecord=dungeon.floor;if(typeof refreshEndlessRecord==='function')refreshEndlessRecord();if(success){if(typeof gameStats!=='undefined'){gameStats.dungeonsCompleted++;gameStats.floorsCleared+=dungeon.floor+1;}if(typeof addXP==='function')addXP(50+dungeon.floor*15);addDungeonLog('=== DUNGEON COMPLETE ===\nLoot: '+dungeon.loot.length+' items');const bonus=15+dungeon.floor*10;updateGold(bonus);addDungeonLog('Bonus: +'+bonus+' gold!');}else{if(typeof gameStats!=='undefined'){gameStats.deaths++;gameStats.floorsCleared+=dungeon.floor;}addDungeonLog('=== YOU DIED ===');inventory.splice(equippedIndex,1);equippedIndex=-1;dungeon.loot=dungeon.loot.slice(0,Math.ceil(dungeon.loot.length/2));addDungeonLog('Lost your sword. Salvaged '+dungeon.loot.length+' items.');if(typeof showDeathScreen==='function')showDeathScreen();}updateDungeonLootDisplay();document.getElementById('enterDungeonBtn').style.display='block';if(typeof saveGame==='function')saveGame();}
 
-document.addEventListener('keydown',(e)=>{if(!dungeon.active)return;const dt=document.getElementById('tab-dungeon');if(!dt||!dt.classList.contains('active'))return;if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A'){e.preventDefault();dKeys.left=true;}if(e.key==='ArrowRight'||e.key==='d'||e.key==='D'){e.preventDefault();dKeys.right=true;}if(e.key==='ArrowUp'||e.key==='w'||e.key==='W'){e.preventDefault();dKeys.up=true;}if(e.key==='ArrowDown'||e.key==='s'||e.key==='S'){e.preventDefault();dKeys.down=true;}if(e.key===' '){e.preventDefault();dKeys.attack=true;}if(e.key>='1'&&e.key<='4'){e.preventDefault();useAbility(parseInt(e.key)-1);}checkDodge(e.key);});
+document.addEventListener('keydown',(e)=>{if(!dungeon.active)return;const dt=document.getElementById('tab-dungeon');if(!dt||!dt.classList.contains('active'))return;if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A'){e.preventDefault();dKeys.left=true;}if(e.key==='ArrowRight'||e.key==='d'||e.key==='D'){e.preventDefault();dKeys.right=true;}if(e.key==='ArrowUp'||e.key==='w'||e.key==='W'){e.preventDefault();dKeys.up=true;}if(e.key==='ArrowDown'||e.key==='s'||e.key==='S'){e.preventDefault();dKeys.down=true;}if(e.key===' '){e.preventDefault();dKeys.attack=true;}if(e.key>='1'&&e.key<='4'){e.preventDefault();useAbility(parseInt(e.key)-1);}
+  // Ten Shadows: 5-9 summon shikigami
+  if(e.key>='5'&&e.key<='9'&&typeof tenShadowsUnlocked!=='undefined'&&tenShadowsUnlocked){e.preventDefault();const shIdx=parseInt(e.key)-5;const shOrder=['toad','serpent','rabbit','elephant','ox','tiger','mahoraga'];if(shIdx<shOrder.length)summonShikigami(shOrder[shIdx]);}
+  checkDodge(e.key);});
 document.addEventListener('keyup',(e)=>{if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A')dKeys.left=false;if(e.key==='ArrowRight'||e.key==='d'||e.key==='D')dKeys.right=false;if(e.key==='ArrowUp'||e.key==='w'||e.key==='W')dKeys.up=false;if(e.key==='ArrowDown'||e.key==='s'||e.key==='S')dKeys.down=false;if(e.key===' ')dKeys.attack=false;});
 document.getElementById('enterDungeonBtn').addEventListener('click',()=>{if(equippedIndex<0||!inventory[equippedIndex]){document.getElementById('dungeonNeedSword').style.display='block';return;}startDungeon();});
 document.getElementById('exitDungeonBtn').addEventListener('click',()=>{if(dungeon.active){addDungeonLog('You flee, keeping your loot.');endDungeon(true);refreshDungeon();}});
@@ -5745,6 +5840,7 @@ function useAbility(slotIdx) {
     if(dungeon.modifier&&dungeon.modifier.effect.noHeal){addDungeonLog('❌ Cursed floor! Healing is blocked!');playerMana+=ab.manaCost;updateDungeonHp();return;}
     if(dungeon.challenge==='ironman'){addDungeonLog('❌ No healing in Ironman!');playerMana+=ab.manaCost;updateDungeonHp();return;}
     dungeon.hp = Math.min(dungeon.maxHp, dungeon.hp + ab.heal);
+    dungeon._noHealRun=false;
     spawnDungeonParticle(dungeon.px,dungeon.py,'#44dd77',10,2);
     addDungeonLog(ab.icon + ' Healed ' + ab.heal + ' HP! -' + ab.manaCost + ' mana');
   } else if (ab.type === 'shield') {
@@ -5793,7 +5889,7 @@ function useAbility(slotIdx) {
     // Spawn friendly wolf
     const sa=Math.random()*Math.PI*2,sd=30;
     if(!dungeon.allies)dungeon.allies=[];
-    dungeon.allies.push({x:dungeon.px+Math.cos(sa)*sd,y:dungeon.py+Math.sin(sa)*sd,hp:40,dmg:12,alive:true,type:'wolf',atkTimer:0});
+    dungeon.allies.push({x:dungeon.px+Math.cos(sa)*sd,y:dungeon.py+Math.sin(sa)*sd,hp:40,maxHp:40,dmg:12,alive:true,type:'wolf',name:'Spirit Wolf',color:'#88aacc',speed:2,atkRate:15,aggroRange:80,atkTimer:0});
     spawnDungeonParticle(dungeon.px,dungeon.py,'#88aacc',10,4);
     addDungeonLog(ab.icon+' Spirit Wolf summoned! -'+ab.manaCost+' mana');
   }
@@ -5839,6 +5935,32 @@ function refreshAbilities() {
   grid.innerHTML = html;
   document.getElementById('abManaDisplay').textContent = playerMana + '/' + playerMaxMana;
   document.getElementById('abPointsDisplay').textContent = abilityPoints;
+  // Ten Shadows panel
+  const tsPanel=document.getElementById('tenShadowsPanel');
+  if(tsPanel){
+    tsPanel.style.display=tenShadowsUnlocked?'block':'none';
+    if(tenShadowsUnlocked){
+      const sgGrid=document.getElementById('shikigamiGrid');
+      const shOrder=['toad','serpent','rabbit','elephant','ox','tiger','mahoraga'];
+      const shKeys=['5','6','7','8','9','—','—'];
+      let shtml='';
+      SHIKIGAMI.forEach((sh,idx)=>{
+        const owned=unlockedShikigami[sh.id];
+        const keyNum=shKeys[idx]||'—';
+        shtml+='<div style="background:'+(owned?'linear-gradient(135deg,rgba(102,68,170,0.15),rgba(30,30,36,0.95))':'#16161a')+';border:1px solid '+(owned?'#6644aa':'#2a2a30')+';border-radius:10px;padding:12px;opacity:'+(owned?'1':'0.5')+';">';
+        shtml+='<div style="display:flex;justify-content:space-between;align-items:center;">';
+        shtml+='<strong style="color:'+(owned?sh.color:'#555')+';font-size:0.88rem;">'+sh.name+'</strong>';
+        if(owned)shtml+='<span style="background:#6644aa;color:#eeddff;padding:2px 8px;border-radius:10px;font-size:0.65rem;font-weight:bold;">['+keyNum+']</span>';
+        shtml+='</div>';
+        shtml+='<div style="font-size:0.75rem;color:#999;margin:4px 0;">'+sh.desc+'</div>';
+        shtml+='<div style="font-size:0.72rem;color:#888;">HP: <strong>'+sh.hp+'</strong> | DMG: <strong>'+sh.dmg+'</strong> | Speed: <strong>'+sh.speed+'</strong></div>';
+        if(!owned)shtml+='<div style="font-size:0.7rem;color:#aa8844;margin-top:4px;">🔒 Quest: '+sh.quest+'</div>';
+        else shtml+='<div style="font-size:0.7rem;color:#44dd77;margin-top:4px;">✓ Unlocked</div>';
+        shtml+='</div>';
+      });
+      sgGrid.innerHTML=shtml;
+    }
+  }
 }
 
 window.unlockAbility = function(id) {
@@ -5888,6 +6010,7 @@ function checkDodge(key){
   if((key!=='r'&&key!=='R')||dodgeCooldown>0||dodgeTimer>0)return;
   const rogueDodge=typeof getClassId==='function'&&getClassId()==='rogue';
   dodgeTimer=8;dodgeCooldown=rogueDodge?15:30;
+  if(dungeon.active)dungeon._dodgeCount=(dungeon._dodgeCount||0)+1;
   const sp=6;
   const f=dungeon.facing;
   dodgeVX=0;dodgeVY=0;
@@ -6423,6 +6546,63 @@ function triggerEvent(ev){
 }
 
 // ══════════════════════════════════════
+// TEN SHADOWS TECHNIQUE
+// ══════════════════════════════════════
+let tenShadowsUnlocked=false;
+const SHIKIGAMI=[
+  {id:'toad',name:'Nue (Toad)',desc:'A poisonous toad that spits venom',quest:'Kill 20 enemies in a single dungeon run',questCheck:()=>{const k=dungeon.enemies?dungeon.enemies.filter(e=>!e.alive).length:0;return k>=20;},
+    hp:35,dmg:10,color:'#44aa44',speed:1.5,atkRate:20,aggroRange:70},
+  {id:'serpent',name:'Orochi (Serpent)',desc:'A shadow serpent that strikes fast',quest:'Reach floor 8 without healing',questCheck:()=>dungeon.floor>=7&&dungeon._noHealRun,
+    hp:25,dmg:18,color:'#6644aa',speed:3,atkRate:10,aggroRange:90},
+  {id:'rabbit',name:'Escape Rabbit',desc:'Fast rabbit that distracts enemies',quest:'Dodge roll 10 times in one run',questCheck:()=>(dungeon._dodgeCount||0)>=10,
+    hp:15,dmg:5,color:'#ddddee',speed:4,atkRate:25,aggroRange:100},
+  {id:'elephant',name:'Max Elephant',desc:'Massive tank that absorbs damage',quest:'Survive to floor 12 with less than 20% HP',questCheck:()=>dungeon.floor>=11&&dungeon.hp>0&&dungeon.hp/dungeon.maxHp<0.2,
+    hp:120,dmg:8,color:'#8899aa',speed:1,atkRate:30,aggroRange:60},
+  {id:'ox',name:'Divine Dog: Totality',desc:'A powerful divine beast',quest:'Kill 3 bosses in a single run',questCheck:()=>(dungeon._bossKills||0)>=3,
+    hp:60,dmg:20,color:'#886644',speed:2,atkRate:12,aggroRange:85},
+  {id:'tiger',name:'Round Deer (Tiger)',desc:'Swift tiger with critical strikes',quest:'Get a 15+ hit combo',questCheck:()=>(typeof comboCount!=='undefined'&&comboCount>=15),
+    hp:45,dmg:25,color:'#dd8833',speed:2.5,atkRate:8,aggroRange:80},
+  {id:'mahoraga',name:'Mahoraga',desc:'The most powerful shikigami. Adapts to anything.',quest:'Clear floor 20 on Ironman challenge',questCheck:()=>dungeon.challenge==='ironman'&&dungeon.floor>=19&&dungeon.hp>0,
+    hp:200,dmg:40,color:'#cc8844',speed:2,atkRate:10,aggroRange:100}
+];
+const unlockedShikigami={};
+let activeShikigami=null;
+
+function summonShikigami(id){
+  if(!tenShadowsUnlocked||!unlockedShikigami[id])return;
+  const sh=SHIKIGAMI.find(s=>s.id===id);
+  if(!sh||!dungeon.active)return;
+  if(playerMana<40){addDungeonLog('Not enough mana! Need 40');return;}
+  playerMana-=40;
+  if(!dungeon.allies)dungeon.allies=[];
+  const sa=Math.random()*Math.PI*2,sd=25;
+  dungeon.allies.push({x:dungeon.px+Math.cos(sa)*sd,y:dungeon.py+Math.sin(sa)*sd,hp:sh.hp,maxHp:sh.hp,dmg:sh.dmg,alive:true,type:sh.id,name:sh.name,color:sh.color,speed:sh.speed,atkRate:sh.atkRate,aggroRange:sh.aggroRange,atkTimer:0});
+  spawnDungeonParticle(dungeon.px,dungeon.py,'#6644aa',12,4);
+  addDungeonLog('🔮 '+sh.name+' summoned! -40 mana');
+  updateDungeonHp();
+}
+
+function checkShikigamiQuest(){
+  if(!tenShadowsUnlocked)return;
+  SHIKIGAMI.forEach(sh=>{
+    if(unlockedShikigami[sh.id])return;
+    if(sh.questCheck()){
+      unlockedShikigami[sh.id]=true;
+      addDungeonLog('🎉 SHIKIGAMI UNLOCKED: '+sh.name+'!');
+      addDungeonLog('   '+sh.desc);
+      spawnDungeonParticle(dungeon.px,dungeon.py,'#cc88ff',15,5);
+      if(typeof saveGame==='function')saveGame();
+    }
+  });
+}
+
+// Check quests periodically during dungeon
+function tickShikigamiQuests(){
+  if(!tenShadowsUnlocked||!dungeon.active)return;
+  checkShikigamiQuest();
+}
+
+// ══════════════════════════════════════
 // TITLE SYSTEM
 // ══════════════════════════════════════
 const TITLES=[
@@ -6669,6 +6849,7 @@ function saveGame(){
       redeemedCodes:{...redeemedCodes},
       ascensionTier,activeTitle,
       charClass:document.getElementById('charClass')?document.getElementById('charClass').value:'warrior',
+      tenShadowsUnlocked,unlockedShikigami:{...unlockedShikigami},
       version:2
     };
     localStorage.setItem('dungeonMasterSave',JSON.stringify(save));
@@ -6700,6 +6881,8 @@ function loadGame(){
     if(s.ascensionTier)ascensionTier=s.ascensionTier;
     if(s.activeTitle)activeTitle=s.activeTitle;
     if(s.charClass&&document.getElementById('charClass'))document.getElementById('charClass').value=s.charClass;
+    if(s.tenShadowsUnlocked)tenShadowsUnlocked=s.tenShadowsUnlocked;
+    if(s.unlockedShikigami)Object.keys(s.unlockedShikigami).forEach(k=>{unlockedShikigami[k]=s.unlockedShikigami[k];});
     if(s.redeemedCodes)Object.keys(s.redeemedCodes).forEach(k=>{redeemedCodes[k]=s.redeemedCodes[k];});
     if(s.leaderboard){
       if(s.leaderboard.bestSwords)leaderboard.bestSwords=s.leaderboard.bestSwords;
