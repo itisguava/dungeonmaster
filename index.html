@@ -5859,9 +5859,9 @@ document.addEventListener('keydown',(e)=>{if(!dungeon.active)return;const dt=doc
   // Ten Shadows: 5-9 summon shikigami
   if(e.key>='5'&&e.key<='9'&&typeof tenShadowsUnlocked!=='undefined'&&tenShadowsUnlocked){e.preventDefault();const shIdx=parseInt(e.key)-5;const shOrder=['toad','serpent','rabbit','elephant','ox','tiger','mahoraga'];if(shIdx<shOrder.length)summonShikigami(shOrder[shIdx]);}
   // Boogie Woogie (E) — swap with nearest enemy
-  if((e.key==='e'||e.key==='E')&&window.jjkBuffs&&window.jjkBuffs.boogieWoogie){e.preventDefault();
+  if((e.key==='e'||e.key==='E')&&!e.repeat&&window.jjkBuffs&&window.jjkBuffs.boogieWoogie){e.preventDefault();
     let nearE2=null,nearD2=Infinity;for(const en of dungeon.enemies){if(!en.alive)continue;const d2=Math.sqrt((dungeon.px-en.x)**2+(dungeon.py-en.y)**2);if(d2<100&&d2<nearD2){nearD2=d2;nearE2=en;}}
-    if(nearE2){const tx=dungeon.px,ty=dungeon.py;dungeon.px=nearE2.x;dungeon.py=nearE2.y;nearE2.x=tx;nearE2.y=ty;spawnDungeonParticle(dungeon.px,dungeon.py,'#ffdd44',10,5);spawnDungeonParticle(nearE2.x,nearE2.y,'#ffdd44',10,5);addDungeonLog('👏 BOOGIE WOOGIE! Swapped positions!');dReveal();}
+    if(nearE2){const tx=dungeon.px,ty=dungeon.py;dungeon.px=nearE2.x;dungeon.py=nearE2.y;nearE2.x=tx;nearE2.y=ty;spawnDungeonParticle(dungeon.px,dungeon.py,'#ffdd44',10,5);spawnDungeonParticle(nearE2.x,nearE2.y,'#ffdd44',10,5);addDungeonLog('👏 BOOGIE WOOGIE! Swapped positions!');dReveal();dKeys.left=false;dKeys.right=false;dKeys.up=false;dKeys.down=false;}
     else addDungeonLog('No enemy nearby to swap with!');}
   // Domain Expansion (C)
   if((e.key==='c'||e.key==='C')&&window.jjkBuffs&&window.jjkBuffs.domainExpansion&&!dungeon._domainUsed){e.preventDefault();
