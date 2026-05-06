@@ -1723,43 +1723,92 @@ function drawSword(){
 
   // Edge type effects
   if(edgeType==='double'){
-    ctx.save();ctx.strokeStyle=mc.bladeLight;ctx.lineWidth=1;ctx.globalAlpha=0.6;
+    ctx.save();ctx.strokeStyle=mc.bladeLight;ctx.lineWidth=1.5;ctx.globalAlpha=0.7;
     ctx.beginPath();ctx.moveTo(cx-bWid/2+1,beY);ctx.lineTo(cx-tipW/2+1,tipY+8);ctx.stroke();
     ctx.beginPath();ctx.moveTo(cx+bWid/2-1,beY);ctx.lineTo(cx+tipW/2-1,tipY+8);ctx.stroke();
+    // Highlight edge
+    ctx.strokeStyle='#fff';ctx.lineWidth=0.5;ctx.globalAlpha=0.3;
+    ctx.beginPath();ctx.moveTo(cx-bWid/2,beY);ctx.lineTo(cx-tipW/2,tipY+8);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx+bWid/2,beY);ctx.lineTo(cx+tipW/2,tipY+8);ctx.stroke();
     ctx.restore();
   } else if(edgeType==='serrated'){
-    ctx.save();ctx.strokeStyle=mc.bladeDark;ctx.lineWidth=1;
+    ctx.save();ctx.fillStyle=mc.bladeDark;ctx.strokeStyle=mc.bladeDark;ctx.lineWidth=1;
     const teeth=Math.floor(bLen/8);
     for(let i=0;i<teeth;i++){
       const y=tipY+12+i*(bLen-12)/teeth;
-      ctx.beginPath();ctx.moveTo(cx+bWid/2,y);ctx.lineTo(cx+bWid/2+3,y+3);ctx.lineTo(cx+bWid/2,y+6);ctx.stroke();
+      // Right edge teeth
+      ctx.beginPath();ctx.moveTo(cx+bWid/2,y);ctx.lineTo(cx+bWid/2+3,y+3);ctx.lineTo(cx+bWid/2,y+6);ctx.fill();
+      // Left edge teeth
+      ctx.beginPath();ctx.moveTo(cx-bWid/2,y);ctx.lineTo(cx-bWid/2-3,y+3);ctx.lineTo(cx-bWid/2,y+6);ctx.fill();
     }
     ctx.restore();
   } else if(edgeType==='wavy'){
-    ctx.save();ctx.strokeStyle=mc.bladeLight;ctx.lineWidth=1.5;ctx.globalAlpha=0.5;
+    // Flamberge — carve wavy indentations scaled to blade width
+    ctx.save();
+    const wavePeriod=0.2;
+    // Scale wave amplitude to blade width (max 30% of half-width, min 1.5px)
+    const waveAmp=Math.max(1.5,Math.min(bWid*0.15,5));
+    // Cut wave notches out of the right edge
+    ctx.globalCompositeOperation='destination-out';
+    ctx.fillStyle='#000';
+    for(let y=tipY+12;y<beY-4;y+=2){
+      const progress=(y-tipY)/(beY-tipY);
+      const curW=bWid/2*(1-progress*bTap);
+      if(curW<4)continue; // skip if blade too narrow at this point
+      const wave=Math.sin(y*wavePeriod)*waveAmp;
+      if(wave>0.5){ctx.fillRect(cx+curW-wave,y,wave+1,2);}
+    }
+    // Cut wave notches out of the left edge
+    for(let y=tipY+12;y<beY-4;y+=2){
+      const progress=(y-tipY)/(beY-tipY);
+      const curW=bWid/2*(1-progress*bTap);
+      if(curW<4)continue;
+      const wave=Math.sin(y*wavePeriod)*waveAmp;
+      if(wave>0.5){ctx.fillRect(cx-curW-1,y,wave+1,2);}
+    }
+    ctx.globalCompositeOperation='source-over';
+    // Draw wavy edge outlines for definition
+    ctx.strokeStyle=mc.bladeDark;ctx.lineWidth=0.8;ctx.globalAlpha=0.6;
     ctx.beginPath();ctx.moveTo(cx+bWid/2,beY);
-    for(let y=beY;y>tipY+10;y-=4){const wave=Math.sin((y-tipY)*0.15)*3;ctx.lineTo(cx+bWid/2+wave,y);}
+    for(let y=beY;y>tipY+10;y-=2){const progress=(y-tipY)/(beY-tipY);const curW=bWid/2*(1-progress*bTap);if(curW<4)continue;const wave=Math.abs(Math.sin(y*wavePeriod)*waveAmp);ctx.lineTo(cx+curW-wave,y);}
     ctx.stroke();
     ctx.beginPath();ctx.moveTo(cx-bWid/2,beY);
-    for(let y=beY;y>tipY+10;y-=4){const wave=Math.sin((y-tipY)*0.15)*3;ctx.lineTo(cx-bWid/2-wave,y);}
-    ctx.stroke();ctx.restore();
+    for(let y=beY;y>tipY+10;y-=2){const progress=(y-tipY)/(beY-tipY);const curW=bWid/2*(1-progress*bTap);if(curW<4)continue;const wave=Math.abs(Math.sin(y*wavePeriod)*waveAmp);ctx.lineTo(cx-curW+wave,y);}
+    ctx.stroke();
+    ctx.restore();
   }
 
   // Blade finish
-  if(bladeFinish==='etched'){
-    ctx.save();ctx.globalAlpha=0.12;ctx.strokeStyle='#fff';ctx.lineWidth=0.5;
-    for(let y=tipY+20;y<beY-10;y+=12){
-      ctx.beginPath();ctx.moveTo(cx-bWid/3,y);ctx.quadraticCurveTo(cx,y-4,cx+bWid/3,y);ctx.stroke();
+  if(bladeFinish==='polished'){
+    // Mirror shine - bright highlight stripe
+    ctx.save();ctx.globalAlpha=0.25;
+    const shineGrad=ctx.createLinearGradient(cx-bWid/2,0,cx+bWid/2,0);
+    shineGrad.addColorStop(0,'transparent');shineGrad.addColorStop(0.3,'#ffffff');shineGrad.addColorStop(0.5,'transparent');shineGrad.addColorStop(0.7,'#ffffff');shineGrad.addColorStop(1,'transparent');
+    ctx.fillStyle=shineGrad;ctx.fillRect(cx-bWid/2,tipY+5,bWid,bLen-5);
+    ctx.restore();
+  } else if(bladeFinish==='matte'){
+    // Subtle noise/grain texture
+    ctx.save();ctx.globalAlpha=0.08;
+    for(let y=tipY+5;y<beY;y+=3){for(let x=cx-bWid/3;x<cx+bWid/3;x+=3){
+      ctx.fillStyle=Math.random()>0.5?'#fff':'#000';ctx.fillRect(x,y,2,2);
+    }}
+    ctx.restore();
+  } else if(bladeFinish==='etched'){
+    ctx.save();ctx.globalAlpha=0.25;ctx.strokeStyle='#fff';ctx.lineWidth=0.8;
+    for(let y=tipY+20;y<beY-10;y+=10){
+      ctx.beginPath();ctx.moveTo(cx-bWid/3,y);ctx.quadraticCurveTo(cx,y-5,cx+bWid/3,y);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(cx-bWid/4,y+5);ctx.quadraticCurveTo(cx,y+2,cx+bWid/4,y+5);ctx.stroke();
     }
     ctx.restore();
   } else if(bladeFinish==='damascus'){
-    ctx.save();ctx.globalAlpha=0.1;
-    for(let y=tipY+10;y<beY-5;y+=3){
-      const w=bWid*0.4;
+    ctx.save();ctx.globalAlpha=0.22;
+    for(let y=tipY+8;y<beY-3;y+=3){
+      const progress=(y-tipY)/(beY-tipY);
+      const curW=bWid*(1-progress*bTap)*0.45;
       ctx.fillStyle=(y%6<3)?mc.bladeLight:mc.bladeDark;
       ctx.beginPath();
-      ctx.moveTo(cx-w/2,y);ctx.quadraticCurveTo(cx,y+Math.sin(y*0.3)*3,cx+w/2,y);
-      ctx.quadraticCurveTo(cx,y+3+Math.sin(y*0.3)*2,cx-w/2,y+3);ctx.fill();
+      ctx.moveTo(cx-curW,y);ctx.quadraticCurveTo(cx+Math.sin(y*0.2)*4,y+Math.sin(y*0.3)*2,cx+curW,y);
+      ctx.quadraticCurveTo(cx+Math.sin(y*0.2+1)*3,y+3+Math.sin(y*0.3)*1.5,cx-curW,y+3);ctx.fill();
     }
     ctx.restore();
   }
@@ -1886,12 +1935,12 @@ const METAL_STATS={
   obsidian:{name:'Obsidian',dmg:26,dur:10,wgt:8,tier:'Rare',color:'#cc88ff'},
   dragonbone:{name:'Dragonbone',dmg:28,dur:20,wgt:7,tier:'Rare',color:'#cc88ff'},
   adamantine:{name:'Adamantine',dmg:24,dur:30,wgt:12,tier:'Rare',color:'#cc88ff'},
-  deepstone:{name:'Deepstone',dmg:22,dur:28,wgt:9,tier:'Dungeon',color:'#4488ff',req:'Deep Crystals x3'},
-  glowmetal:{name:'Glowmetal',dmg:18,dur:20,wgt:4,tier:'Dungeon',color:'#4488ff',req:'Glowmoss Extract x2'},
-  cavecrystal:{name:'Crystal Blade',dmg:26,dur:14,wgt:3,tier:'Dungeon',color:'#4488ff',req:'Cave Crystal x2'},
-  shadowsteel:{name:'Shadow Steel',dmg:30,dur:18,wgt:8,tier:'Epic',color:'#ff8844',req:'Shadow Ore x3'},
-  soulforge:{name:'Soulforged',dmg:25,dur:25,wgt:6,tier:'Epic',color:'#ff8844',req:'Soul Fragment x2'},
-  cursedmetal:{name:'Cursed Metal',dmg:35,dur:12,wgt:10,tier:'Legendary',color:'#ffaa33',req:'Cursed Gem x1'}
+  deepstone:{name:'Deepstone',dmg:28,dur:35,wgt:9,tier:'Dungeon',color:'#4488ff',req:'Deep Crystals x3'},
+  glowmetal:{name:'Glowmetal',dmg:24,dur:28,wgt:3,tier:'Dungeon',color:'#4488ff',req:'Glowmoss Extract x2'},
+  cavecrystal:{name:'Crystal Blade',dmg:32,dur:20,wgt:3,tier:'Dungeon',color:'#4488ff',req:'Cave Crystal x2'},
+  shadowsteel:{name:'Shadow Steel',dmg:38,dur:22,wgt:7,tier:'Epic',color:'#ff8844',req:'Shadow Ore x3'},
+  soulforge:{name:'Soulforged',dmg:32,dur:32,wgt:5,tier:'Epic',color:'#ff8844',req:'Soul Fragment x2'},
+  cursedmetal:{name:'Cursed Metal',dmg:45,dur:15,wgt:9,tier:'Legendary',color:'#ffaa33',req:'Cursed Gem x1'}
 };
 function updateMetalStats(){
   const m=document.getElementById('metal').value;
@@ -1930,12 +1979,12 @@ function calculateSword(){
   else if(metal==='obsidian'){dmg+=26;dur+=10;wgt+=8;}
   else if(metal==='dragonbone'){dmg+=28;dur+=20;wgt+=7;}
   else if(metal==='adamantine'){dmg+=24;dur+=30;wgt+=12;}
-  else if(metal==='deepstone'){dmg+=22;dur+=28;wgt+=9;}
-  else if(metal==='glowmetal'){dmg+=18;dur+=20;wgt+=4;}
-  else if(metal==='cavecrystal'){dmg+=26;dur+=14;wgt+=3;}
-  else if(metal==='shadowsteel'){dmg+=30;dur+=18;wgt+=8;}
-  else if(metal==='soulforge'){dmg+=25;dur+=25;wgt+=6;}
-  else if(metal==='cursedmetal'){dmg+=35;dur+=12;wgt+=10;}
+  else if(metal==='deepstone'){dmg+=28;dur+=35;wgt+=9;}
+  else if(metal==='glowmetal'){dmg+=24;dur+=28;wgt+=3;}
+  else if(metal==='cavecrystal'){dmg+=32;dur+=20;wgt+=3;}
+  else if(metal==='shadowsteel'){dmg+=38;dur+=22;wgt+=7;}
+  else if(metal==='soulforge'){dmg+=32;dur+=32;wgt+=5;}
+  else if(metal==='cursedmetal'){dmg+=45;dur+=15;wgt+=9;}
   if(length==='short'){dmg+=8;dur+=4;wgt+=4;}else if(length==='normal'){dmg+=12;dur+=6;wgt+=7;}else if(length==='long'){dmg+=16;dur+=5;wgt+=9;}else if(length==='greatsword'){dmg+=22;dur+=6;wgt+=14;}
   if(hilt==='rough')dur+=4;else if(hilt==='standard')dur+=7;else if(hilt==='ornate')dur+=9;else if(hilt==='royal')dur+=12;
   if(process==='quick'){dmg+=4;dur-=6;}else if(process==='balanced'){dmg+=8;dur+=4;}else if(process==='careful'){dmg+=10;dur+=10;wgt+=1;}else if(process==='legendary'){dmg+=16;dur+=18;}
