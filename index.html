@@ -1,4 +1,4 @@
-
+\
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5858,18 +5858,19 @@ function endDungeon(success){
 document.addEventListener('keydown',(e)=>{if(!dungeon.active)return;const dt=document.getElementById('tab-dungeon');if(!dt||!dt.classList.contains('active'))return;if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A'){e.preventDefault();dKeys.left=true;}if(e.key==='ArrowRight'||e.key==='d'||e.key==='D'){e.preventDefault();dKeys.right=true;}if(e.key==='ArrowUp'||e.key==='w'||e.key==='W'){e.preventDefault();dKeys.up=true;}if(e.key==='ArrowDown'||e.key==='s'||e.key==='S'){e.preventDefault();dKeys.down=true;}if(e.key===' '){e.preventDefault();dKeys.attack=true;}if(e.key>='1'&&e.key<='4'){e.preventDefault();useAbility(parseInt(e.key)-1);}
   // Ten Shadows: 5-9 summon shikigami
   if(e.key>='5'&&e.key<='9'&&typeof tenShadowsUnlocked!=='undefined'&&tenShadowsUnlocked){e.preventDefault();const shIdx=parseInt(e.key)-5;const shOrder=['toad','serpent','rabbit','elephant','ox','tiger','mahoraga'];if(shIdx<shOrder.length)summonShikigami(shOrder[shIdx]);}
-  // Boogie Woogie (T) — swap with nearest enemy
-  if((e.key==='t'||e.key==='T')&&window.jjkBuffs&&window.jjkBuffs.boogieWoogie){e.preventDefault();
+  // Boogie Woogie (I) — swap with nearest enemy
+  if((e.key==='i'||e.key==='I')&&window.jjkBuffs&&window.jjkBuffs.boogieWoogie){e.preventDefault();
     let nearE2=null,nearD2=Infinity;for(const en of dungeon.enemies){if(!en.alive)continue;const d2=Math.sqrt((dungeon.px-en.x)**2+(dungeon.py-en.y)**2);if(d2<100&&d2<nearD2){nearD2=d2;nearE2=en;}}
     if(nearE2){const tx=dungeon.px,ty=dungeon.py;dungeon.px=nearE2.x;dungeon.py=nearE2.y;nearE2.x=tx;nearE2.y=ty;spawnDungeonParticle(dungeon.px,dungeon.py,'#ffdd44',10,5);spawnDungeonParticle(nearE2.x,nearE2.y,'#ffdd44',10,5);addDungeonLog('👏 BOOGIE WOOGIE! Swapped positions!');dReveal();}
     else addDungeonLog('No enemy nearby to swap with!');}
-  // Domain Expansion (Q) — kill all enemies on floor (once per run)
-  if((e.key==='q'||e.key==='Q')&&window.jjkBuffs&&window.jjkBuffs.domainExpansion&&!dungeon._domainUsed){e.preventDefault();
+  // Domain Expansion (U)
+  if((e.key==='u'||e.key==='U')&&window.jjkBuffs&&window.jjkBuffs.domainExpansion&&!dungeon._domainUsed){e.preventDefault();
     dungeon._domainUsed=true;let dKills=0;
     for(const en of dungeon.enemies){if(!en.alive)continue;en.alive=false;dKills++;spawnDungeonParticle(en.x,en.y,'#cc2244',12,6);spawnDungeonParticle(en.x,en.y,'#440011',8,4);recordEnemy(en.data.name,en.data);trackKill();}
     spawnDungeonParticle(dungeon.px,dungeon.py,'#cc0022',20,8);addDungeonLog('🔴 DOMAIN EXPANSION: MALEVOLENT SHRINE! '+dKills+' enemies obliterated!');if(typeof playSFX==='function')playSFX('boss','C1','2n');}
   // Hollow Purple (V) — beam, BOSS FLOORS ONLY (once per floor)
-  if((e.key==='v'||e.key==='V')&&window.jjkBuffs&&window.jjkBuffs.hollowPurple&&!dungeon._purpleUsed){e.preventDefault();
+  // Hollow Purple (Y) — boss only, needs Red+Blue
+  if((e.key==='y'||e.key==='Y')&&window.jjkBuffs&&window.jjkBuffs.hollowPurple&&!dungeon._purpleUsed){e.preventDefault();
     const hasBoss=dungeon.enemies.some(en=>en.alive&&en.isBoss);
     if(!hasBoss){addDungeonLog('🟣 Hollow Purple can only be used on boss floors!');}
     else if(!dungeon._redUsed||!dungeon._blueUsed){addDungeonLog('🟣 Use Red (F) and Blue (C) first to build up Hollow Purple!');}
@@ -5950,7 +5951,8 @@ document.addEventListener('keydown',(e)=>{if(!dungeon.active)return;const dt=doc
     },1000/30);
     }}
   // Cursed Red (F) — repel all nearby enemies away
-  if((e.key==='f'||e.key==='F')&&window.jjkBuffs&&window.jjkBuffs.red&&!dungeon._redUsed){e.preventDefault();
+  // Cursed Red (E)
+  if((e.key==='e'||e.key==='E')&&window.jjkBuffs&&window.jjkBuffs.red&&!dungeon._redUsed){e.preventDefault();
     dungeon._redUsed=true;
     let rHits=0;
     for(const en of dungeon.enemies){if(!en.alive)continue;const rd=Math.sqrt((dungeon.px-en.x)**2+(dungeon.py-en.y)**2);
@@ -5963,7 +5965,8 @@ document.addEventListener('keydown',(e)=>{if(!dungeon.active)return;const dt=doc
     addDungeonLog('🔴 CURSED RED! Blasted '+rHits+' enemies away!');
     if(dungeon._blueUsed&&window.jjkBuffs&&window.jjkBuffs.hollowPurple)addDungeonLog('🟣 Red + Blue converging... HOLLOW PURPLE ready! Press V!');}
   // Cursed Blue (C) — pull enemies in and crush
-  if((e.key==='c'||e.key==='C')&&window.jjkBuffs&&window.jjkBuffs.blue&&!dungeon._blueUsed){e.preventDefault();
+  // Cursed Blue (T)
+  if((e.key==='t'||e.key==='T')&&window.jjkBuffs&&window.jjkBuffs.blue&&!dungeon._blueUsed){e.preventDefault();
     dungeon._blueUsed=true;
     let bHits=0;
     for(const en of dungeon.enemies){if(!en.alive)continue;const bd=Math.sqrt((dungeon.px-en.x)**2+(dungeon.py-en.y)**2);
@@ -5974,12 +5977,13 @@ document.addEventListener('keydown',(e)=>{if(!dungeon.active)return;const dt=doc
     spawnDungeonParticle(dungeon.px,dungeon.py,'#4444ff',15,5);spawnDungeonParticle(dungeon.px,dungeon.py,'#6688ff',10,3);
     addDungeonLog('🔵 CURSED BLUE! Pulled '+bHits+' enemies in and crushed them!');
     if(dungeon._redUsed&&window.jjkBuffs&&window.jjkBuffs.hollowPurple)addDungeonLog('🟣 Red + Blue converging... HOLLOW PURPLE ready! Press V!');}
-  // Curtain (B) — shield that blocks 80 damage (once per floor)
-  if((e.key==='b'||e.key==='B')&&window.jjkBuffs&&window.jjkBuffs.curtain&&!dungeon._curtainUsed){e.preventDefault();
+  // Curtain (O)
+  if((e.key==='o'||e.key==='O')&&window.jjkBuffs&&window.jjkBuffs.curtain&&!dungeon._curtainUsed){e.preventDefault();
     dungeon._curtainUsed=true;dungeonShield+=80;
     spawnDungeonParticle(dungeon.px,dungeon.py,'#4466aa',15,4);addDungeonLog('🔵 CURTAIN deployed! +80 shield!');}
   // Puppet Manipulation (G) — mind-control nearest enemy for 10 seconds
-  if((e.key==='g'||e.key==='G')&&window.jjkBuffs&&window.jjkBuffs.puppet){e.preventDefault();
+  // Puppet Manipulation (P)
+  if((e.key==='p'||e.key==='P')&&window.jjkBuffs&&window.jjkBuffs.puppet){e.preventDefault();
     let nearP=null,nearPD=Infinity;
     for(const en of dungeon.enemies){if(!en.alive||en.isBoss||en._puppet)continue;const d2=Math.sqrt((dungeon.px-en.x)**2+(dungeon.py-en.y)**2);if(d2<60&&d2<nearPD){nearPD=d2;nearP=en;}}
     if(nearP){
@@ -6316,13 +6320,13 @@ function refreshAbilities() {
         {id:'strawDoll',name:'Straw Doll Technique',desc:'Every 3rd hit = 3x damage',key:'Passive',icon:'🪡',color:'#ff6688'},
         {id:'idleTransfig',name:'Idle Transfiguration',desc:'20% chance to convert killed enemy',key:'Passive',icon:'🎭',color:'#aa66cc'},
         {id:'projection',name:'Projection Sorcery',desc:'Move 50% faster',key:'Passive',icon:'💨',color:'#44aadd'},
-        {id:'red',name:'Cursed Red',desc:'Blast enemies away + 15 DMG',key:'F',color:'#ff3333',icon:'🔴'},
-        {id:'blue',name:'Cursed Blue',desc:'Pull enemies in + 30 DMG',key:'C',color:'#4466ff',icon:'🔵'},
-        {id:'hollowPurple',name:'Hollow Purple',desc:'Beam of destruction (boss only, needs Red+Blue)',key:'V',color:'#9933ff',icon:'🟣'},
-        {id:'domainExpansion',name:'Malevolent Shrine',desc:'Kill all enemies on floor',key:'Q',color:'#cc2244',icon:'🔴'},
-        {id:'boogieWoogie',name:'Boogie Woogie',desc:'Swap positions with nearest enemy',key:'T',color:'#ffdd44',icon:'👏'},
-        {id:'curtain',name:'Curtain',desc:'Shield that blocks 80 DMG',key:'B',color:'#4466aa',icon:'🔵'},
-        {id:'puppet',name:'Puppet Manipulation',desc:'Mind-control nearest enemy for 10s',key:'G',color:'#aa44cc',icon:'🎭'}
+        {id:'red',name:'Cursed Red',desc:'Blast enemies away + 15 DMG',key:'E',color:'#ff3333',icon:'🔴'},
+        {id:'blue',name:'Cursed Blue',desc:'Pull enemies in + 30 DMG',key:'T',color:'#4466ff',icon:'🔵'},
+        {id:'hollowPurple',name:'Hollow Purple',desc:'Beam of destruction (boss only, needs Red+Blue)',key:'Y',color:'#9933ff',icon:'🟣'},
+        {id:'domainExpansion',name:'Malevolent Shrine',desc:'Kill all enemies on floor',key:'U',color:'#cc2244',icon:'🔴'},
+        {id:'boogieWoogie',name:'Boogie Woogie',desc:'Swap positions with nearest enemy',key:'I',color:'#ffdd44',icon:'👏'},
+        {id:'curtain',name:'Curtain',desc:'Shield that blocks 80 DMG',key:'O',color:'#4466aa',icon:'🔵'},
+        {id:'puppet',name:'Puppet Manipulation',desc:'Mind-control nearest enemy for 10s',key:'P',color:'#aa44cc',icon:'🎭'}
       ];
       const jGrid=document.getElementById('jjkGrid');
       let jhtml='';
