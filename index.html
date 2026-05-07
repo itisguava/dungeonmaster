@@ -4798,10 +4798,6 @@ const SECRET_CODES = {
   'NIKNIKA': {
     name: 'Gear 5 — Sun God Nika', desc: 'Luffy\'s awakening. Everything is buffed: +50% DMG, +50% HP, +50% speed, attacks rubber-bounce between enemies.',
     opBuff: 'nika'
-  },
-  'UNLOCKALL': {
-    name: 'Master of All', desc: 'Unlocks EVERY secret ability — JJK, One Piece, Ten Shadows, everything.',
-    unlockAllAbilities: true
   }
 };
 
@@ -4881,19 +4877,6 @@ document.getElementById('redeemCodeBtn').addEventListener('click', () => {
     result.innerHTML = '<span style="color:#ff4444;">🏴‍☠️ DEVIL FRUIT AWAKENED!</span><br><span style="color:#ffdddd;font-weight:bold;">' + secret.name + '</span><br><span style="color:#aaa;">' + secret.desc + '</span>';
     result.style.color = '#ff4444';
     addDungeonLog('🏴‍☠️ ' + secret.name + ' power unlocked!');
-  } else if (secret.unlockAllAbilities) {
-    // Unlock ALL JJK
-    if(!window.jjkBuffs)window.jjkBuffs={};
-    ['infinity','domainExpansion','reversal','blackFlash','boogieWoogie','cleave','hollowPurple','divergentFist','curtain','idleTransfig','strawDoll','projection','puppet','red','blue'].forEach(k=>{window.jjkBuffs[k]=true;});
-    // Unlock ALL One Piece
-    if(!window.opBuffs)window.opBuffs={};
-    ['gomu','mera','gura','ope','hie','pika','yami','nika'].forEach(k=>{window.opBuffs[k]=true;});
-    // Unlock Ten Shadows + all shikigami
-    tenShadowsUnlocked=true;
-    ['toad','serpent','rabbit','elephant','ox','tiger','mahoraga'].forEach(k=>{unlockedShikigami[k]=true;});
-    result.innerHTML='<span style="color:#ff44ff;font-size:1.1rem;">👑 MASTER OF ALL UNLOCKED!</span><br><span style="color:#eeddff;">Every JJK technique, every Devil Fruit, every Shikigami.</span><br><span style="color:#ffdd44;">You are now unstoppable.</span>';
-    result.style.color='#ff44ff';
-    addDungeonLog('👑 MASTER OF ALL — Every secret ability unlocked!');
   }
   refreshInventory();
   if(typeof saveGame==='function')saveGame();
