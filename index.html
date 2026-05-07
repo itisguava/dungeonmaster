@@ -4702,6 +4702,10 @@ const SECRET_CODES = {
     name: 'Material Pack', desc: 'A bundle of rare dungeon materials!',
     materials: true
   },
+  'MOTHERLOAD': {
+    name: 'Motherload', desc: '20 of every dungeon material!',
+    megaMaterials: true
+  },
   'TENSHADOWS': {
     name: 'Ten Shadows Technique', desc: 'Unlock the Ten Shadows! Summon shikigami in the dungeon. Complete quests to unlock each one.',
     tenShadows: true
@@ -4857,6 +4861,11 @@ document.getElementById('redeemCodeBtn').addEventListener('click', () => {
   } else if (secret.materials) {
     addMaterial('Soul Shard',2);addMaterial('Shadow Ore',2);addMaterial('Deep Crystals',2);addMaterial('Cave Crystal',2);addMaterial('Cursed Gem',1);addMaterial('Glowmoss Extract',2);
     result.innerHTML = '<span style="color:#44dd77;">CODE REDEEMED!</span><br>' + secret.name + ' — Rare materials added to your stash!';
+    result.style.color = '#44dd77';
+    refreshMaterialDisplay();
+  } else if (secret.megaMaterials) {
+    addMaterial('Soul Shard',20);addMaterial('Shadow Ore',20);addMaterial('Deep Crystals',20);addMaterial('Cave Crystal',20);addMaterial('Cursed Gem',20);addMaterial('Glowmoss Extract',20);addMaterial('Deepstone Chunk',20);addMaterial('Crypt Bone',20);
+    result.innerHTML = '<span style="color:#44dd77;">💎 MOTHERLOAD!</span><br>20 of every dungeon material added!';
     result.style.color = '#44dd77';
     refreshMaterialDisplay();
   } else if (secret.tenShadows) {
