@@ -925,6 +925,11 @@
       <p style="color:#888;font-size:0.82rem;">Unlocked via secret codes. These are permanent abilities.</p>
       <div id="jjkGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin:8px 0;"></div>
     </div>
+    <div class="panel wide" id="opPanel" style="display:none;">
+      <h2>🏴‍☠️ Devil Fruit Powers</h2>
+      <p style="color:#888;font-size:0.82rem;">Unlocked via secret codes. Permanent passive buffs.</p>
+      <div id="opGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin:8px 0;"></div>
+    </div>
   </div>
 </div>
 
@@ -4758,8 +4763,45 @@ const SECRET_CODES = {
     jjkBuff: 'projection'
   },
   'PUPPETMASTER': {
-    name: 'Puppet Manipulation', desc: 'Mechamaru\'s technique. Press G to mind-control the nearest enemy — it fights for you for 10 seconds.',
+    name: 'Puppet Manipulation', desc: 'Mechamaru\'s technique. Press V to mind-control the nearest enemy — it fights for you for 10 seconds.',
     jjkBuff: 'puppet'
+  },
+  // ── ONE PIECE DEVIL FRUITS ──
+  'GOMUGOMU': {
+    name: 'Gomu Gomu no Mi (Nika)', desc: 'Luffy\'s fruit. +40% attack speed, attacks bounce enemies away, and 25% chance to dodge any hit.',
+    opBuff: 'gomu'
+  },
+  'MERAMERA': {
+    name: 'Mera Mera no Mi', desc: 'Ace\'s flame fruit. All attacks deal fire AOE damage to nearby enemies. +20 DMG.',
+    opBuff: 'mera'
+  },
+  'GURAGRURA': {
+    name: 'Gura Gura no Mi', desc: 'Whitebeard\'s quake fruit. Every hit shakes the ground dealing 50% splash DMG to ALL enemies on screen.',
+    opBuff: 'gura'
+  },
+  'OPEOPEOP': {
+    name: 'Ope Ope no Mi', desc: 'Law\'s fruit. ROOM: All enemies in range take 2x damage and can\'t heal. +30% crit chance.',
+    opBuff: 'ope'
+  },
+  'HIEHIE': {
+    name: 'Hie Hie no Mi', desc: 'Aokiji\'s ice fruit. All enemies permanently slowed by 60%. Frozen enemies take 2x damage.',
+    opBuff: 'hie'
+  },
+  'PIKAPIKA': {
+    name: 'Pika Pika no Mi', desc: 'Kizaru\'s light fruit. Move at 2x speed. 20% chance to instant-kill any non-boss enemy.',
+    opBuff: 'pika'
+  },
+  'YAMIYAMI': {
+    name: 'Yami Yami no Mi', desc: 'Blackbeard\'s darkness. Absorb 30% of damage dealt as HP. Enemies can\'t use special abilities.',
+    opBuff: 'yami'
+  },
+  'NIKNIKA': {
+    name: 'Gear 5 — Sun God Nika', desc: 'Luffy\'s awakening. Everything is buffed: +50% DMG, +50% HP, +50% speed, attacks rubber-bounce between enemies.',
+    opBuff: 'nika'
+  },
+  'UNLOCKALL': {
+    name: 'Master of All', desc: 'Unlocks EVERY secret ability — JJK, One Piece, Ten Shadows, everything.',
+    unlockAllAbilities: true
   }
 };
 
@@ -4833,6 +4875,25 @@ document.getElementById('redeemCodeBtn').addEventListener('click', () => {
     result.innerHTML = '<span style="color:#cc44ff;">🔮 CURSED TECHNIQUE UNLOCKED!</span><br><span style="color:#eeddff;font-weight:bold;">' + secret.name + '</span><br><span style="color:#aaa;">' + secret.desc + '</span>';
     result.style.color = '#cc44ff';
     addDungeonLog('🔮 ' + secret.name + ' unlocked!');
+  } else if (secret.opBuff) {
+    if(!window.opBuffs)window.opBuffs={};
+    window.opBuffs[secret.opBuff]=true;
+    result.innerHTML = '<span style="color:#ff4444;">🏴‍☠️ DEVIL FRUIT AWAKENED!</span><br><span style="color:#ffdddd;font-weight:bold;">' + secret.name + '</span><br><span style="color:#aaa;">' + secret.desc + '</span>';
+    result.style.color = '#ff4444';
+    addDungeonLog('🏴‍☠️ ' + secret.name + ' power unlocked!');
+  } else if (secret.unlockAllAbilities) {
+    // Unlock ALL JJK
+    if(!window.jjkBuffs)window.jjkBuffs={};
+    ['infinity','domainExpansion','reversal','blackFlash','boogieWoogie','cleave','hollowPurple','divergentFist','curtain','idleTransfig','strawDoll','projection','puppet','red','blue'].forEach(k=>{window.jjkBuffs[k]=true;});
+    // Unlock ALL One Piece
+    if(!window.opBuffs)window.opBuffs={};
+    ['gomu','mera','gura','ope','hie','pika','yami','nika'].forEach(k=>{window.opBuffs[k]=true;});
+    // Unlock Ten Shadows + all shikigami
+    tenShadowsUnlocked=true;
+    ['toad','serpent','rabbit','elephant','ox','tiger','mahoraga'].forEach(k=>{unlockedShikigami[k]=true;});
+    result.innerHTML='<span style="color:#ff44ff;font-size:1.1rem;">👑 MASTER OF ALL UNLOCKED!</span><br><span style="color:#eeddff;">Every JJK technique, every Devil Fruit, every Shikigami.</span><br><span style="color:#ffdd44;">You are now unstoppable.</span>';
+    result.style.color='#ff44ff';
+    addDungeonLog('👑 MASTER OF ALL — Every secret ability unlocked!');
   }
   refreshInventory();
   if(typeof saveGame==='function')saveGame();
@@ -5106,7 +5167,9 @@ function dungeonBattle(ed){const sw=inventory[equippedIndex];if(!sw)return false
 
 function dungeonTick(){
   if(!dungeon.active)return;const pb=5;let dx=0,dy=0;
-  const projSpeed=window.jjkBuffs&&window.jjkBuffs.projection?DSPEED*1.5:DSPEED;
+  let projSpeed=window.jjkBuffs&&window.jjkBuffs.projection?DSPEED*1.5:DSPEED;
+  if(window.opBuffs&&window.opBuffs.pika)projSpeed=DSPEED*2; // Pika: 2x speed
+  if(window.opBuffs&&window.opBuffs.nika)projSpeed=Math.max(projSpeed,DSPEED*1.5); // Nika: 1.5x
   if(dKeys.left)dx-=projSpeed;if(dKeys.right)dx+=projSpeed;if(dKeys.up)dy-=projSpeed;if(dKeys.down)dy+=projSpeed;
   if(dx&&dy){dx*=0.707;dy*=0.707;}
   if(dy<0)dungeon.facing='up';else if(dy>0)dungeon.facing='down';else if(dx<0)dungeon.facing='left';else if(dx>0)dungeon.facing='right';
@@ -5185,7 +5248,8 @@ function dungeonTick(){
     if(e.poisoned>0){e.poisoned--;if(e.poisoned%15===0){e.curHp-=2;spawnFloatingNumber(e.x,e.y-10,'-2','#44bb33');if(e.curHp<=0){e.alive=false;spawnDungeonParticle(e.x,e.y,'#44bb33',8,4);recordEnemy(e.data.name,e.data);trackKill();continue;}}}
     if(e.bleeding>0){e.bleeding--;if(e.bleeding%20===0){e.curHp-=3;spawnFloatingNumber(e.x,e.y-10,'-3','#cc3344');if(e.curHp<=0){e.alive=false;spawnDungeonParticle(e.x,e.y,'#cc3344',8,4);recordEnemy(e.data.name,e.data);trackKill();continue;}}}
     if(e.slowed>0)e.slowed--;
-    const enemySpeedMult=e.slowed>0?0.4:1;
+    let enemySpeedMult=e.slowed>0?0.4:1;
+    if(window.opBuffs&&window.opBuffs.hie)enemySpeedMult*=0.4; // Hie: permanent 60% slow
     const distToPlayer=Math.sqrt((dungeon.px-e.x)**2+(dungeon.py-e.y)**2);
 
     // Boss AI
@@ -5293,6 +5357,8 @@ function dungeonTick(){
           // Thorns reflect
           if(thornsCounter>0){const ref=Math.round(ed2*0.5);e.curHp-=ref;}
           if(window.jjkBuffs&&window.jjkBuffs.infinity)ed2=Math.max(1,Math.round(ed2*0.5));
+          // Gomu Gomu: 25% dodge chance
+          if(window.opBuffs&&window.opBuffs.gomu&&Math.random()<0.25){ed2=0;spawnFloatingNumber(dungeon.px,dungeon.py-20,'GOMU DODGE!','#ff4444');spawnDungeonParticle(dungeon.px,dungeon.py,'#ff6644',6,3);}
           dungeon.hp-=ed2;dungeon._lastHitBy=e.data.name;
           spawnFloatingNumber(dungeon.px+Math.random()*10-5,dungeon.py-15,'-'+ed2,'#ff3333');
           updateDungeonHp();
@@ -5339,9 +5405,23 @@ function dungeonTick(){
       // Combo multiplier
       if(typeof getComboMult==='function'){const cm=getComboMult();if(cm>1)pd=Math.round(pd*cm);}
       if(typeof addCombo==='function')addCombo();
+      // One Piece devil fruit buffs on hit
+      const op=window.opBuffs||{};
+      if(op.nika)pd=Math.round(pd*1.5); // Gear 5: +50% DMG
+      if(op.mera)pd+=20; // Mera: +20 flat DMG
+      if(op.ope){pd=Math.round(pd*1.3);} // Ope: +30% (ROOM)
+      if(op.pika&&!e.isBoss&&Math.random()<0.2){pd=e.curHp;spawnFloatingNumber(e.x,e.y-25,'LIGHT SPEED!','#ffff44');spawnDungeonParticle(e.x,e.y,'#ffff88',12,6);} // Pika: 20% instant kill
       e.curHp-=pd;
       if(typeof playSFX==='function')playSFX('hit','C2','16n');
       spawnFloatingNumber(e.x+Math.random()*10-5,e.y-15,'-'+pd,'#ff6644');
+      // Yami: absorb 30% as HP
+      if(op.yami&&pd>0){const yHeal=Math.round(pd*0.3);dungeon.hp=Math.min(dungeon.maxHp,dungeon.hp+yHeal);}
+      // Gura: 50% splash to ALL enemies
+      if(op.gura){for(const e2 of dungeon.enemies){if(e2===e||!e2.alive)continue;const gd=Math.round(pd*0.5);e2.curHp-=gd;spawnFloatingNumber(e2.x,e2.y-8,'-'+gd,'#cc8844');if(e2.curHp<=0){e2.alive=false;spawnDungeonParticle(e2.x,e2.y,e2.data.color||'#cc3333',10,5);recordEnemy(e2.data.name,e2.data);trackKill();}}}
+      // Mera: fire AOE to nearby
+      if(op.mera){for(const e2 of dungeon.enemies){if(e2===e||!e2.alive)continue;const md=Math.sqrt((e.x-e2.x)**2+(e.y-e2.y)**2);if(md<40){const fd=Math.round(pd*0.3);e2.curHp-=fd;spawnDungeonParticle(e2.x,e2.y,'#ff4422',4,3);if(e2.curHp<=0){e2.alive=false;spawnDungeonParticle(e2.x,e2.y,'#ff6622',8,4);recordEnemy(e2.data.name,e2.data);trackKill();}}}}
+      // Nika: rubber bounce to random enemy
+      if(op.nika){const bounceTargets=dungeon.enemies.filter(e2=>e2!==e&&e2.alive);if(bounceTargets.length>0){const bt=bounceTargets[Math.floor(Math.random()*bounceTargets.length)];const bd2=Math.round(pd*0.4);bt.curHp-=bd2;spawnFloatingNumber(bt.x,bt.y-10,'-'+bd2,'#ff8866');spawnDungeonParticle(bt.x,bt.y,'#ffaa88',5,3);if(bt.curHp<=0){bt.alive=false;spawnDungeonParticle(bt.x,bt.y,bt.data.color||'#cc3333',10,5);recordEnemy(bt.data.name,bt.data);trackKill();}}}
       // Enchantment effects on hit
       if(sw.enchantment){
         const eid=sw.enchantment;
@@ -5816,7 +5896,7 @@ function refreshDungeon(){const need=document.getElementById('dungeonNeedSword')
   const sw=inventory[equippedIndex];const cl=typeof getPlayerClass==='function'?getPlayerClass():{name:'Warrior',icon:'⚔️'};
   if(eqInfo)eqInfo.innerHTML='<span style="color:#c89b3c;">'+sw.title+'</span> ['+sw.grade+'] DMG:'+sw.damage+' DUR:'+sw.durability+(sw.enchantment?' <span style="color:#cc88ff;">('+sw.enchantment+')</span>':'')+' | Class: <span style="color:#cc88ff;">'+cl.icon+' '+cl.name+'</span>';
   if(dungeon.active){ui.style.display='block';btn.style.display='none';drawDungeon();drawMinimap();}else{ui.style.display='none';btn.style.display='block';}}
-function startDungeon(){if(equippedIndex<0||!inventory[equippedIndex])return;const sw=inventory[equippedIndex];dungeon.floor=0;const bonusHp=typeof getSkillValue==='function'?getSkillValue('bonusHp',0):0;const ascHpMult=typeof getAscensionBonuses==='function'&&ascensionTier>0?getAscensionBonuses(ascensionTier).hpMult:1;const cl=typeof getPlayerClass==='function'?getPlayerClass():{hpMult:1,manaMult:1};dungeon.maxHp=Math.round((50+sw.durability*2+getTotalArmorStats().hp+bonusHp)*ascHpMult*cl.hpMult);dungeon.hp=dungeon.maxHp;dungeon.loot=[];dungeon.active=true;dungeon.facing='down';dungeon.walkFrame=0;dungeon.allies=[];dungeon._phoenixUsed=false;dungeon._eventDmgBuff=1;dungeon._eventDmgFlat=0;dungeon._eventGoldBuff=1;dungeon._paladinHitCount=0;dungeon._dodgeCount=0;dungeon._bossKills=0;dungeon._noHealRun=true;const bonusMana=typeof getSkillValue==='function'?getSkillValue('bonusMana',0):0;playerMaxMana=Math.round((100+bonusMana)*cl.manaMult);playerMana=playerMaxMana;dungeonShield=0;berserkCounter=0;thornsCounter=0;dungeon._hasRevive=false;dungeon._timeStop=0;dungeon._domainUsed=false;if(typeof gameStats!=='undefined')gameStats.dungeonsAttempted++;if(typeof applyChallengeStart==='function')applyChallengeStart();loadFloor(0);const clId=typeof getClassId==='function'?getClassId():'warrior';document.getElementById('dungeonLog').textContent=cl.icon||'⚔️'+' '+CLASSES[clId].name+' enters the '+FLOOR_THEMES[0].name+'...\n';refreshDungeon();if(dungeon.gameLoop)clearInterval(dungeon.gameLoop);dungeon.gameLoop=setInterval(dungeonTick,1000/30);}
+function startDungeon(){if(equippedIndex<0||!inventory[equippedIndex])return;const sw=inventory[equippedIndex];dungeon.floor=0;const bonusHp=typeof getSkillValue==='function'?getSkillValue('bonusHp',0):0;const ascHpMult=typeof getAscensionBonuses==='function'&&ascensionTier>0?getAscensionBonuses(ascensionTier).hpMult:1;const cl=typeof getPlayerClass==='function'?getPlayerClass():{hpMult:1,manaMult:1};dungeon.maxHp=Math.round((50+sw.durability*2+getTotalArmorStats().hp+bonusHp)*ascHpMult*cl.hpMult*(window.opBuffs&&window.opBuffs.nika?1.5:1));dungeon.hp=dungeon.maxHp;dungeon.loot=[];dungeon.active=true;dungeon.facing='down';dungeon.walkFrame=0;dungeon.allies=[];dungeon._phoenixUsed=false;dungeon._eventDmgBuff=1;dungeon._eventDmgFlat=0;dungeon._eventGoldBuff=1;dungeon._paladinHitCount=0;dungeon._dodgeCount=0;dungeon._bossKills=0;dungeon._noHealRun=true;const bonusMana=typeof getSkillValue==='function'?getSkillValue('bonusMana',0):0;playerMaxMana=Math.round((100+bonusMana)*cl.manaMult);playerMana=playerMaxMana;dungeonShield=0;berserkCounter=0;thornsCounter=0;dungeon._hasRevive=false;dungeon._timeStop=0;dungeon._domainUsed=false;if(typeof gameStats!=='undefined')gameStats.dungeonsAttempted++;if(typeof applyChallengeStart==='function')applyChallengeStart();loadFloor(0);const clId=typeof getClassId==='function'?getClassId():'warrior';document.getElementById('dungeonLog').textContent=cl.icon||'⚔️'+' '+CLASSES[clId].name+' enters the '+FLOOR_THEMES[0].name+'...\n';refreshDungeon();if(dungeon.gameLoop)clearInterval(dungeon.gameLoop);dungeon.gameLoop=setInterval(dungeonTick,1000/30);}
 function loadFloor(floor){dungeon.floor=floor;const gen=genDungeon(floor);dungeon.map=gen.map;dungeon.enemies=gen.enemies;dungeon.chests=gen.chests;dungeon.npcs=gen.npcs||[];dungeon.puzzles=gen.puzzles||[];dungeon.events=gen.events||[];dungeon.px=gen.spawnX;dungeon.py=gen.spawnY;
   dungeon.explored=[];for(let y=0;y<DH;y++){dungeon.explored[y]=[];for(let x=0;x<DW;x++)dungeon.explored[y][x]=false;}
   document.getElementById('dFloorNum').textContent=(floor+1);
@@ -5869,8 +5949,8 @@ document.addEventListener('keydown',(e)=>{if(!dungeon.active)return;const dt=doc
     for(const en of dungeon.enemies){if(!en.alive)continue;en.alive=false;dKills++;spawnDungeonParticle(en.x,en.y,'#cc2244',12,6);spawnDungeonParticle(en.x,en.y,'#440011',8,4);recordEnemy(en.data.name,en.data);trackKill();}
     spawnDungeonParticle(dungeon.px,dungeon.py,'#cc0022',20,8);addDungeonLog('🔴 DOMAIN EXPANSION: MALEVOLENT SHRINE! '+dKills+' enemies obliterated!');if(typeof playSFX==='function')playSFX('boss','C1','2n');}
   // Hollow Purple (V) — beam, BOSS FLOORS ONLY (once per floor)
-  // Hollow Purple (X) — boss only, needs Red+Blue
-  if((e.key==='x'||e.key==='X')&&window.jjkBuffs&&window.jjkBuffs.hollowPurple&&!dungeon._purpleUsed){e.preventDefault();
+  // Hollow Purple (Q) — boss only, needs Red+Blue
+  if((e.key==='q'||e.key==='Q')&&window.jjkBuffs&&window.jjkBuffs.hollowPurple&&!dungeon._purpleUsed){e.preventDefault();
     const hasBoss=dungeon.enemies.some(en=>en.alive&&en.isBoss);
     if(!hasBoss){addDungeonLog('🟣 Hollow Purple can only be used on boss floors!');}
     else if(!dungeon._redUsed||!dungeon._blueUsed){addDungeonLog('🟣 Use Red (F) and Blue (C) first to build up Hollow Purple!');}
@@ -5951,8 +6031,8 @@ document.addEventListener('keydown',(e)=>{if(!dungeon.active)return;const dt=doc
     },1000/30);
     }}
   // Cursed Red (F) — repel all nearby enemies away
-  // Cursed Red (Q)
-  if((e.key==='q'||e.key==='Q')&&window.jjkBuffs&&window.jjkBuffs.red&&!dungeon._redUsed){e.preventDefault();
+  // Cursed Red (Z)
+  if((e.key==='z'||e.key==='Z')&&window.jjkBuffs&&window.jjkBuffs.red&&!dungeon._redUsed){e.preventDefault();
     dungeon._redUsed=true;
     let rHits=0;
     for(const en of dungeon.enemies){if(!en.alive)continue;const rd=Math.sqrt((dungeon.px-en.x)**2+(dungeon.py-en.y)**2);
@@ -5965,8 +6045,8 @@ document.addEventListener('keydown',(e)=>{if(!dungeon.active)return;const dt=doc
     addDungeonLog('🔴 CURSED RED! Blasted '+rHits+' enemies away!');
     if(dungeon._blueUsed&&window.jjkBuffs&&window.jjkBuffs.hollowPurple)addDungeonLog('🟣 Red + Blue converging... HOLLOW PURPLE ready! Press V!');}
   // Cursed Blue (C) — pull enemies in and crush
-  // Cursed Blue (Z)
-  if((e.key==='z'||e.key==='Z')&&window.jjkBuffs&&window.jjkBuffs.blue&&!dungeon._blueUsed){e.preventDefault();
+  // Cursed Blue (X)
+  if((e.key==='x'||e.key==='X')&&window.jjkBuffs&&window.jjkBuffs.blue&&!dungeon._blueUsed){e.preventDefault();
     dungeon._blueUsed=true;
     let bHits=0;
     for(const en of dungeon.enemies){if(!en.alive)continue;const bd=Math.sqrt((dungeon.px-en.x)**2+(dungeon.py-en.y)**2);
@@ -6320,9 +6400,9 @@ function refreshAbilities() {
         {id:'strawDoll',name:'Straw Doll Technique',desc:'Every 3rd hit = 3x damage',key:'Passive',icon:'🪡',color:'#ff6688'},
         {id:'idleTransfig',name:'Idle Transfiguration',desc:'20% chance to convert killed enemy',key:'Passive',icon:'🎭',color:'#aa66cc'},
         {id:'projection',name:'Projection Sorcery',desc:'Move 50% faster',key:'Passive',icon:'💨',color:'#44aadd'},
-        {id:'red',name:'Cursed Red',desc:'Blast enemies away + 15 DMG',key:'Q',color:'#ff3333',icon:'🔴'},
-        {id:'blue',name:'Cursed Blue',desc:'Pull enemies in + 30 DMG',key:'Z',color:'#4466ff',icon:'🔵'},
-        {id:'hollowPurple',name:'Hollow Purple',desc:'Beam of destruction (boss only, needs Red+Blue)',key:'X',color:'#9933ff',icon:'🟣'},
+        {id:'red',name:'Cursed Red',desc:'Blast enemies away + 15 DMG',key:'Z',color:'#ff3333',icon:'🔴'},
+        {id:'blue',name:'Cursed Blue',desc:'Pull enemies in + 30 DMG',key:'X',color:'#4466ff',icon:'🔵'},
+        {id:'hollowPurple',name:'Hollow Purple',desc:'Beam of destruction (boss only, needs Z+X)',key:'Q',color:'#9933ff',icon:'🟣'},
         {id:'domainExpansion',name:'Malevolent Shrine',desc:'Kill all enemies on floor',key:'C',color:'#cc2244',icon:'🔴'},
         {id:'boogieWoogie',name:'Boogie Woogie',desc:'Swap positions with nearest enemy',key:'E',color:'#ffdd44',icon:'👏'},
         {id:'curtain',name:'Curtain',desc:'Shield that blocks 80 DMG',key:'F',color:'#4466aa',icon:'🔵'},
@@ -6342,6 +6422,38 @@ function refreshAbilities() {
         jhtml+='</div>';
       });
       jGrid.innerHTML=jhtml;
+    }
+  }
+  // One Piece Devil Fruit panel
+  const opPanel=document.getElementById('opPanel');
+  if(opPanel){
+    const ob=window.opBuffs||{};
+    const hasOP=Object.keys(ob).length>0;
+    opPanel.style.display=hasOP?'block':'none';
+    if(hasOP){
+      const OP_DISPLAY=[
+        {id:'gomu',name:'Gomu Gomu no Mi',desc:'25% dodge chance, enemies knocked back',icon:'🥊',color:'#ff4444'},
+        {id:'mera',name:'Mera Mera no Mi',desc:'+20 DMG, fire AOE to nearby enemies',icon:'🔥',color:'#ff6622'},
+        {id:'gura',name:'Gura Gura no Mi',desc:'50% splash DMG to ALL enemies',icon:'💥',color:'#cc8844'},
+        {id:'ope',name:'Ope Ope no Mi',desc:'+30% crit, enemies take 2x DMG',icon:'🔵',color:'#4488ff'},
+        {id:'hie',name:'Hie Hie no Mi',desc:'All enemies permanently 60% slower',icon:'❄️',color:'#66bbff'},
+        {id:'pika',name:'Pika Pika no Mi',desc:'2x move speed, 20% instant kill chance',icon:'⚡',color:'#ffff44'},
+        {id:'yami',name:'Yami Yami no Mi',desc:'Absorb 30% of damage dealt as HP',icon:'🌑',color:'#664488'},
+        {id:'nika',name:'Gear 5 — Sun God Nika',desc:'+50% DMG/HP/speed, attacks bounce',icon:'☀️',color:'#ff8844'}
+      ];
+      const oGrid=document.getElementById('opGrid');
+      let ohtml='';
+      OP_DISPLAY.forEach(o=>{
+        if(!ob[o.id])return;
+        ohtml+='<div style="background:linear-gradient(135deg,rgba(200,50,50,0.1),rgba(30,30,36,0.95));border:1px solid '+o.color+'44;border-radius:10px;padding:10px;">';
+        ohtml+='<div style="display:flex;justify-content:space-between;align-items:center;">';
+        ohtml+='<strong style="color:'+o.color+';font-size:0.85rem;">'+o.icon+' '+o.name+'</strong>';
+        ohtml+='<span style="background:#cc222233;color:#ff6666;padding:2px 8px;border-radius:10px;font-size:0.65rem;font-weight:bold;">Passive</span>';
+        ohtml+='</div>';
+        ohtml+='<div style="font-size:0.72rem;color:#999;margin-top:4px;">'+o.desc+'</div>';
+        ohtml+='</div>';
+      });
+      oGrid.innerHTML=ohtml;
     }
   }
 }
@@ -6742,7 +6854,26 @@ const DUNGEON_BOSSES={
     desc:'Charges, breathes fire, and teleports'},
   19:{name:'God of the Forge',baseHp:2000,atk:60,def:35,goldMin:500,goldMax:800,color:'#ffaa22',sz:3.0,
     abilities:['charge','aoe','summon','regen'],chargeSpeed:6,aoeRange:80,aoeDmg:35,summonCount:3,regenRate:5,atkSpeed:18,
-    desc:'The ultimate challenge — all abilities'}
+    desc:'The ultimate challenge — all abilities'},
+  // Endless mode bosses
+  24:{name:'Abyssal Leviathan',baseHp:3000,atk:75,def:40,goldMin:600,goldMax:1000,color:'#224488',sz:3.2,
+    abilities:['charge','aoe','teleport','regen'],chargeSpeed:7,aoeRange:90,aoeDmg:40,regenRate:8,atkSpeed:16,
+    desc:'A massive sea beast from the deep abyss'},
+  29:{name:'Lich Emperor',baseHp:4000,atk:85,def:45,goldMin:800,goldMax:1400,color:'#44cc44',sz:2.8,
+    abilities:['aoe','summon','regen','teleport'],aoeRange:100,aoeDmg:50,summonCount:4,regenRate:10,atkSpeed:15,
+    desc:'Undead sorcerer king — summons armies and heals'},
+  34:{name:'Void Titan',baseHp:5500,atk:100,def:55,goldMin:1000,goldMax:1800,color:'#6622aa',sz:3.5,
+    abilities:['charge','aoe','summon','teleport'],chargeSpeed:8,aoeRange:100,aoeDmg:60,summonCount:3,atkSpeed:14,
+    desc:'A being from beyond reality — devastating power'},
+  39:{name:'Chaos Hydra',baseHp:7000,atk:110,def:50,goldMin:1200,goldMax:2200,color:'#cc2266',sz:3.0,
+    abilities:['charge','aoe','regen','summon'],chargeSpeed:6,aoeRange:110,aoeDmg:70,regenRate:15,summonCount:5,atkSpeed:13,
+    desc:'Many-headed beast — regenerates and overwhelms'},
+  44:{name:'World Serpent',baseHp:9000,atk:130,def:60,goldMin:1500,goldMax:2800,color:'#44aa88',sz:3.8,
+    abilities:['charge','aoe','teleport','regen','summon'],chargeSpeed:9,aoeRange:120,aoeDmg:80,regenRate:12,summonCount:4,atkSpeed:12,
+    desc:'Coils around the world — unstoppable force'},
+  49:{name:'The Architect',baseHp:12000,atk:150,def:70,goldMin:2000,goldMax:4000,color:'#ffddff',sz:3.5,
+    abilities:['charge','aoe','teleport','regen','summon'],chargeSpeed:10,aoeRange:130,aoeDmg:100,regenRate:20,summonCount:5,atkSpeed:10,
+    desc:'Creator of the dungeon itself — the final test'}
 };
 
 function isBossFloor(floor){return DUNGEON_BOSSES[floor]!==undefined;}
@@ -7234,6 +7365,7 @@ function saveGame(){
       charClass:document.getElementById('charClass')?document.getElementById('charClass').value:'warrior',
       tenShadowsUnlocked,unlockedShikigami:{...unlockedShikigami},
       jjkBuffs:window.jjkBuffs?{...window.jjkBuffs}:{},
+      opBuffs:window.opBuffs?{...window.opBuffs}:{},
       version:2
     };
     localStorage.setItem('dungeonMasterSave',JSON.stringify(save));
@@ -7268,6 +7400,7 @@ function loadGame(){
     if(s.tenShadowsUnlocked)tenShadowsUnlocked=s.tenShadowsUnlocked;
     if(s.unlockedShikigami)Object.keys(s.unlockedShikigami).forEach(k=>{unlockedShikigami[k]=s.unlockedShikigami[k];});
     if(s.jjkBuffs){if(!window.jjkBuffs)window.jjkBuffs={};Object.keys(s.jjkBuffs).forEach(k=>{window.jjkBuffs[k]=s.jjkBuffs[k];});}
+    if(s.opBuffs){if(!window.opBuffs)window.opBuffs={};Object.keys(s.opBuffs).forEach(k=>{window.opBuffs[k]=s.opBuffs[k];});}
     if(s.redeemedCodes)Object.keys(s.redeemedCodes).forEach(k=>{redeemedCodes[k]=s.redeemedCodes[k];});
     if(s.leaderboard){
       if(s.leaderboard.bestSwords)leaderboard.bestSwords=s.leaderboard.bestSwords;
