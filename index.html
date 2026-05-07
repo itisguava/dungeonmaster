@@ -5150,9 +5150,9 @@ function dungeonBattle(ed){const sw=inventory[equippedIndex];if(!sw)return false
 
 function dungeonTick(){
   if(!dungeon.active)return;const pb=5;let dx=0,dy=0;
-  let projSpeed=window.jjkBuffs&&window.jjkBuffs.projection?DSPEED*1.5:DSPEED;
-  if(window.opBuffs&&window.opBuffs.pika)projSpeed=DSPEED*2; // Pika: 2x speed
-  if(window.opBuffs&&window.opBuffs.nika)projSpeed=Math.max(projSpeed,DSPEED*1.5); // Nika: 1.5x
+  let projSpeed=isBuffActive('jjk','projection')?DSPEED*1.5:DSPEED;
+  if(isBuffActive('op','pika'))projSpeed=DSPEED*2;
+  if(isBuffActive('op','nika'))projSpeed=Math.max(projSpeed,DSPEED*1.5);
   if(dKeys.left)dx-=projSpeed;if(dKeys.right)dx+=projSpeed;if(dKeys.up)dy-=projSpeed;if(dKeys.down)dy+=projSpeed;
   if(dx&&dy){dx*=0.707;dy*=0.707;}
   if(dy<0)dungeon.facing='up';else if(dy>0)dungeon.facing='down';else if(dx<0)dungeon.facing='left';else if(dx>0)dungeon.facing='right';
@@ -5175,7 +5175,7 @@ function dungeonTick(){
   // Paladin passive heal (1 HP/sec)
   if(typeof getPlayerClass==='function'&&getPlayerClass().passiveHeal&&dungeon.hp<dungeon.maxHp){dungeon.hp=Math.min(dungeon.maxHp,dungeon.hp+1/30);}
   // Reverse Cursed Technique (3 HP/sec)
-  if(window.jjkBuffs&&window.jjkBuffs.reversal&&dungeon.hp<dungeon.maxHp){dungeon.hp=Math.min(dungeon.maxHp,dungeon.hp+3/30);}
+  if(isBuffActive('jjk','reversal')&&dungeon.hp<dungeon.maxHp){dungeon.hp=Math.min(dungeon.maxHp,dungeon.hp+3/30);}
   // Poison tick from modifier
   if(dungeon.modifier&&dungeon.modifier.effect.poisonTick){if(!dungeon._poisonTick)dungeon._poisonTick=0;dungeon._poisonTick++;if(dungeon._poisonTick>=30){dungeon._poisonTick=0;dungeon.hp--;dungeon._lastHitBy='Toxic Fog';spawnFloatingNumber(dungeon.px,dungeon.py-15,'-1','#66cc33');updateDungeonHp();if(dungeon.hp<=0){endDungeon(false);return;}}}
   // Trap check
@@ -5232,7 +5232,7 @@ function dungeonTick(){
     if(e.bleeding>0){e.bleeding--;if(e.bleeding%20===0){e.curHp-=3;spawnFloatingNumber(e.x,e.y-10,'-3','#cc3344');if(e.curHp<=0){e.alive=false;spawnDungeonParticle(e.x,e.y,'#cc3344',8,4);recordEnemy(e.data.name,e.data);trackKill();continue;}}}
     if(e.slowed>0)e.slowed--;
     let enemySpeedMult=e.slowed>0?0.4:1;
-    if(window.opBuffs&&window.opBuffs.hie)enemySpeedMult*=0.4; // Hie: permanent 60% slow
+    if(isBuffActive('op','hie'))enemySpeedMult*=0.4;
     const distToPlayer=Math.sqrt((dungeon.px-e.x)**2+(dungeon.py-e.y)**2);
 
     // Boss AI
@@ -5339,9 +5339,8 @@ function dungeonTick(){
           if(typeof getSkillValue==='function')ed2=Math.max(1,ed2-getSkillValue('dmgReduce',0));
           // Thorns reflect
           if(thornsCounter>0){const ref=Math.round(ed2*0.5);e.curHp-=ref;}
-          if(window.jjkBuffs&&window.jjkBuffs.infinity)ed2=Math.max(1,Math.round(ed2*0.5));
-          // Gomu Gomu: 25% dodge chance
-          if(window.opBuffs&&window.opBuffs.gomu&&Math.random()<0.25){ed2=0;spawnFloatingNumber(dungeon.px,dungeon.py-20,'GOMU DODGE!','#ff4444');spawnDungeonParticle(dungeon.px,dungeon.py,'#ff6644',6,3);}
+          if(isBuffActive('jjk','infinity'))ed2=Math.max(1,Math.round(ed2*0.5));
+          if(isBuffActive('op','gomu')&&Math.random()<0.25){ed2=0;spawnFloatingNumber(dungeon.px,dungeon.py-20,'GOMU DODGE!','#ff4444');spawnDungeonParticle(dungeon.px,dungeon.py,'#ff6644',6,3);}
           dungeon.hp-=ed2;dungeon._lastHitBy=e.data.name;
           spawnFloatingNumber(dungeon.px+Math.random()*10-5,dungeon.py-15,'-'+ed2,'#ff3333');
           updateDungeonHp();
@@ -5382,29 +5381,23 @@ function dungeonTick(){
       // Paladin: holy smite every 5th hit
       if(typeof getClassId==='function'&&getClassId()==='paladin'){dungeon._paladinHitCount=(dungeon._paladinHitCount||0)+1;if(dungeon._paladinHitCount%5===0){pd+=15;spawnDungeonParticle(e.x,e.y,'#ffeeaa',6,3);spawnFloatingNumber(e.x,e.y-30,'+15 Holy','#ffeeaa');}}
       // Black Flash (15% chance, 2.5x damage)
-      if(window.jjkBuffs&&window.jjkBuffs.blackFlash&&Math.random()<0.15){pd=Math.round(pd*2.5);spawnDungeonParticle(e.x,e.y,'#111111',10,6);spawnDungeonParticle(e.x,e.y,'#ff2222',6,4);spawnFloatingNumber(e.x,e.y-30,'BLACK FLASH!','#ff4444');}
-      // Straw Doll — every 3rd hit resonates for 3x
-      if(window.jjkBuffs&&window.jjkBuffs.strawDoll){dungeon._strawCount=(dungeon._strawCount||0)+1;if(dungeon._strawCount%3===0){pd=Math.round(pd*3);spawnDungeonParticle(e.x,e.y,'#ff6688',8,5);spawnFloatingNumber(e.x,e.y-30,'RESONANCE!','#ff6688');}}
+      if(isBuffActive('jjk','blackFlash')&&Math.random()<0.15){pd=Math.round(pd*2.5);spawnDungeonParticle(e.x,e.y,'#111111',10,6);spawnDungeonParticle(e.x,e.y,'#ff2222',6,4);spawnFloatingNumber(e.x,e.y-30,'BLACK FLASH!','#ff4444');}
+      if(isBuffActive('jjk','strawDoll')){dungeon._strawCount=(dungeon._strawCount||0)+1;if(dungeon._strawCount%3===0){pd=Math.round(pd*3);spawnDungeonParticle(e.x,e.y,'#ff6688',8,5);spawnFloatingNumber(e.x,e.y-30,'RESONANCE!','#ff6688');}}
       // Combo multiplier
       if(typeof getComboMult==='function'){const cm=getComboMult();if(cm>1)pd=Math.round(pd*cm);}
       if(typeof addCombo==='function')addCombo();
-      // One Piece devil fruit buffs on hit
       const op=window.opBuffs||{};
-      if(op.nika)pd=Math.round(pd*1.5); // Gear 5: +50% DMG
-      if(op.mera)pd+=20; // Mera: +20 flat DMG
-      if(op.ope){pd=Math.round(pd*1.3);} // Ope: +30% (ROOM)
-      if(op.pika&&!e.isBoss&&Math.random()<0.2){pd=e.curHp;spawnFloatingNumber(e.x,e.y-25,'LIGHT SPEED!','#ffff44');spawnDungeonParticle(e.x,e.y,'#ffff88',12,6);} // Pika: 20% instant kill
+      if(isBuffActive('op','nika'))pd=Math.round(pd*1.5);
+      if(isBuffActive('op','mera'))pd+=20;
+      if(isBuffActive('op','ope'))pd=Math.round(pd*1.3);
+      if(isBuffActive('op','pika')&&!e.isBoss&&Math.random()<0.2){pd=e.curHp;spawnFloatingNumber(e.x,e.y-25,'LIGHT SPEED!','#ffff44');spawnDungeonParticle(e.x,e.y,'#ffff88',12,6);}
       e.curHp-=pd;
       if(typeof playSFX==='function')playSFX('hit','C2','16n');
       spawnFloatingNumber(e.x+Math.random()*10-5,e.y-15,'-'+pd,'#ff6644');
-      // Yami: absorb 30% as HP
-      if(op.yami&&pd>0){const yHeal=Math.round(pd*0.3);dungeon.hp=Math.min(dungeon.maxHp,dungeon.hp+yHeal);}
-      // Gura: 50% splash to ALL enemies
-      if(op.gura){for(const e2 of dungeon.enemies){if(e2===e||!e2.alive)continue;const gd=Math.round(pd*0.5);e2.curHp-=gd;spawnFloatingNumber(e2.x,e2.y-8,'-'+gd,'#cc8844');if(e2.curHp<=0){e2.alive=false;spawnDungeonParticle(e2.x,e2.y,e2.data.color||'#cc3333',10,5);recordEnemy(e2.data.name,e2.data);trackKill();}}}
-      // Mera: fire AOE to nearby
-      if(op.mera){for(const e2 of dungeon.enemies){if(e2===e||!e2.alive)continue;const md=Math.sqrt((e.x-e2.x)**2+(e.y-e2.y)**2);if(md<40){const fd=Math.round(pd*0.3);e2.curHp-=fd;spawnDungeonParticle(e2.x,e2.y,'#ff4422',4,3);if(e2.curHp<=0){e2.alive=false;spawnDungeonParticle(e2.x,e2.y,'#ff6622',8,4);recordEnemy(e2.data.name,e2.data);trackKill();}}}}
-      // Nika: rubber bounce to random enemy
-      if(op.nika){const bounceTargets=dungeon.enemies.filter(e2=>e2!==e&&e2.alive);if(bounceTargets.length>0){const bt=bounceTargets[Math.floor(Math.random()*bounceTargets.length)];const bd2=Math.round(pd*0.4);bt.curHp-=bd2;spawnFloatingNumber(bt.x,bt.y-10,'-'+bd2,'#ff8866');spawnDungeonParticle(bt.x,bt.y,'#ffaa88',5,3);if(bt.curHp<=0){bt.alive=false;spawnDungeonParticle(bt.x,bt.y,bt.data.color||'#cc3333',10,5);recordEnemy(bt.data.name,bt.data);trackKill();}}}
+      if(isBuffActive('op','yami')&&pd>0){const yHeal=Math.round(pd*0.3);dungeon.hp=Math.min(dungeon.maxHp,dungeon.hp+yHeal);}
+      if(isBuffActive('op','gura')){for(const e2 of dungeon.enemies){if(e2===e||!e2.alive)continue;const gd=Math.round(pd*0.5);e2.curHp-=gd;spawnFloatingNumber(e2.x,e2.y-8,'-'+gd,'#cc8844');if(e2.curHp<=0){e2.alive=false;spawnDungeonParticle(e2.x,e2.y,e2.data.color||'#cc3333',10,5);recordEnemy(e2.data.name,e2.data);trackKill();}}}
+      if(isBuffActive('op','mera')){for(const e2 of dungeon.enemies){if(e2===e||!e2.alive)continue;const md=Math.sqrt((e.x-e2.x)**2+(e.y-e2.y)**2);if(md<40){const fd=Math.round(pd*0.3);e2.curHp-=fd;spawnDungeonParticle(e2.x,e2.y,'#ff4422',4,3);if(e2.curHp<=0){e2.alive=false;spawnDungeonParticle(e2.x,e2.y,'#ff6622',8,4);recordEnemy(e2.data.name,e2.data);trackKill();}}}}
+      if(isBuffActive('op','nika')){const bounceTargets=dungeon.enemies.filter(e2=>e2!==e&&e2.alive);if(bounceTargets.length>0){const bt=bounceTargets[Math.floor(Math.random()*bounceTargets.length)];const bd2=Math.round(pd*0.4);bt.curHp-=bd2;spawnFloatingNumber(bt.x,bt.y-10,'-'+bd2,'#ff8866');spawnDungeonParticle(bt.x,bt.y,'#ffaa88',5,3);if(bt.curHp<=0){bt.alive=false;spawnDungeonParticle(bt.x,bt.y,bt.data.color||'#cc3333',10,5);recordEnemy(bt.data.name,bt.data);trackKill();}}}
       // Enchantment effects on hit
       if(sw.enchantment){
         const eid=sw.enchantment;
@@ -5427,9 +5420,9 @@ function dungeonTick(){
         else if(eid==='phoenix'&&dungeon.hp<=0&&!dungeon._phoenixUsed){dungeon._phoenixUsed=true;dungeon.hp=Math.round(dungeon.maxHp*0.4);spawnDungeonParticle(dungeon.px,dungeon.py,'#ff6600',20,6);addDungeonLog('🔥 Phoenix Flame revives you!');}
       }
       // Divergent Fist — delayed second hit for 40%
-      if(window.jjkBuffs&&window.jjkBuffs.divergentFist&&e.alive){const dfTarget=e,dfDmg=Math.round(pd*0.4);setTimeout(()=>{if(dfTarget.alive&&dungeon.active){dfTarget.curHp-=dfDmg;spawnFloatingNumber(dfTarget.x,dfTarget.y-10,'-'+dfDmg,'#4488ff');spawnDungeonParticle(dfTarget.x,dfTarget.y,'#4488ff',5,3);if(dfTarget.curHp<=0){dfTarget.alive=false;spawnDungeonParticle(dfTarget.x,dfTarget.y,dfTarget.data.color||'#cc3333',10,5);recordEnemy(dfTarget.data.name,dfTarget.data);trackKill();}}},200);}
+      if(isBuffActive('jjk','divergentFist')&&e.alive){const dfTarget=e,dfDmg=Math.round(pd*0.4);setTimeout(()=>{if(dfTarget.alive&&dungeon.active){dfTarget.curHp-=dfDmg;spawnFloatingNumber(dfTarget.x,dfTarget.y-10,'-'+dfDmg,'#4488ff');spawnDungeonParticle(dfTarget.x,dfTarget.y,'#4488ff',5,3);if(dfTarget.curHp<=0){dfTarget.alive=false;spawnDungeonParticle(dfTarget.x,dfTarget.y,dfTarget.data.color||'#cc3333',10,5);recordEnemy(dfTarget.data.name,dfTarget.data);trackKill();}}},200);}
       // Idle Transfiguration — 20% chance to convert killed enemy to ally
-      if(window.jjkBuffs&&window.jjkBuffs.idleTransfig&&!e.alive&&Math.random()<0.2){
+      if(isBuffActive('jjk','idleTransfig')&&!e.alive&&Math.random()<0.2){
         if(!dungeon.allies)dungeon.allies=[];
         dungeon.allies.push({x:e.x,y:e.y,hp:30,maxHp:30,dmg:8,alive:true,type:'wolf',name:'Transfigured',color:'#8866aa',speed:2,atkRate:18,aggroRange:70,atkTimer:0});
         spawnDungeonParticle(e.x,e.y,'#aa66cc',10,4);addDungeonLog('🔮 Enemy transfigured into ally!');
@@ -5461,7 +5454,7 @@ function dungeonTick(){
       }
       updateDungeonHp();dungeon.nearEnemy=null;
       // Cleave & Dismantle — hit all enemies in range
-      if(window.jjkBuffs&&window.jjkBuffs.cleave){
+      if(isBuffActive('jjk','cleave')){
         for(const e2 of dungeon.enemies){if(!e2.alive||e2===e)continue;const cd=Math.sqrt((dungeon.px-e2.x)**2+(dungeon.py-e2.y)**2);
           if(cd<30){const cd2=Math.round(pd*0.6);e2.curHp-=cd2;spawnFloatingNumber(e2.x,e2.y-10,'-'+cd2,'#cc4466');spawnDungeonParticle(e2.x,e2.y,'#cc2244',4,3);
             if(e2.curHp<=0){e2.alive=false;spawnDungeonParticle(e2.x,e2.y,e2.data.color||'#cc3333',10,5);recordEnemy(e2.data.name,e2.data);trackKill();}}}
@@ -5879,7 +5872,7 @@ function refreshDungeon(){const need=document.getElementById('dungeonNeedSword')
   const sw=inventory[equippedIndex];const cl=typeof getPlayerClass==='function'?getPlayerClass():{name:'Warrior',icon:'⚔️'};
   if(eqInfo)eqInfo.innerHTML='<span style="color:#c89b3c;">'+sw.title+'</span> ['+sw.grade+'] DMG:'+sw.damage+' DUR:'+sw.durability+(sw.enchantment?' <span style="color:#cc88ff;">('+sw.enchantment+')</span>':'')+' | Class: <span style="color:#cc88ff;">'+cl.icon+' '+cl.name+'</span>';
   if(dungeon.active){ui.style.display='block';btn.style.display='none';drawDungeon();drawMinimap();}else{ui.style.display='none';btn.style.display='block';}}
-function startDungeon(){if(equippedIndex<0||!inventory[equippedIndex])return;const sw=inventory[equippedIndex];dungeon.floor=0;const bonusHp=typeof getSkillValue==='function'?getSkillValue('bonusHp',0):0;const ascHpMult=typeof getAscensionBonuses==='function'&&ascensionTier>0?getAscensionBonuses(ascensionTier).hpMult:1;const cl=typeof getPlayerClass==='function'?getPlayerClass():{hpMult:1,manaMult:1};dungeon.maxHp=Math.round((50+sw.durability*2+getTotalArmorStats().hp+bonusHp)*ascHpMult*cl.hpMult*(window.opBuffs&&window.opBuffs.nika?1.5:1));dungeon.hp=dungeon.maxHp;dungeon.loot=[];dungeon.active=true;dungeon.facing='down';dungeon.walkFrame=0;dungeon.allies=[];dungeon._phoenixUsed=false;dungeon._eventDmgBuff=1;dungeon._eventDmgFlat=0;dungeon._eventGoldBuff=1;dungeon._paladinHitCount=0;dungeon._dodgeCount=0;dungeon._bossKills=0;dungeon._noHealRun=true;const bonusMana=typeof getSkillValue==='function'?getSkillValue('bonusMana',0):0;playerMaxMana=Math.round((100+bonusMana)*cl.manaMult);playerMana=playerMaxMana;dungeonShield=0;berserkCounter=0;thornsCounter=0;dungeon._hasRevive=false;dungeon._timeStop=0;dungeon._domainUsed=false;if(typeof gameStats!=='undefined')gameStats.dungeonsAttempted++;if(typeof applyChallengeStart==='function')applyChallengeStart();loadFloor(0);const clId=typeof getClassId==='function'?getClassId():'warrior';document.getElementById('dungeonLog').textContent=cl.icon||'⚔️'+' '+CLASSES[clId].name+' enters the '+FLOOR_THEMES[0].name+'...\n';refreshDungeon();if(dungeon.gameLoop)clearInterval(dungeon.gameLoop);dungeon.gameLoop=setInterval(dungeonTick,1000/30);}
+function startDungeon(){if(equippedIndex<0||!inventory[equippedIndex])return;const sw=inventory[equippedIndex];dungeon.floor=0;const bonusHp=typeof getSkillValue==='function'?getSkillValue('bonusHp',0):0;const ascHpMult=typeof getAscensionBonuses==='function'&&ascensionTier>0?getAscensionBonuses(ascensionTier).hpMult:1;const cl=typeof getPlayerClass==='function'?getPlayerClass():{hpMult:1,manaMult:1};dungeon.maxHp=Math.round((50+sw.durability*2+getTotalArmorStats().hp+bonusHp)*ascHpMult*cl.hpMult*(typeof isBuffActive==='function'&&isBuffActive('op','nika')?1.5:1));dungeon.hp=dungeon.maxHp;dungeon.loot=[];dungeon.active=true;dungeon.facing='down';dungeon.walkFrame=0;dungeon.allies=[];dungeon._phoenixUsed=false;dungeon._eventDmgBuff=1;dungeon._eventDmgFlat=0;dungeon._eventGoldBuff=1;dungeon._paladinHitCount=0;dungeon._dodgeCount=0;dungeon._bossKills=0;dungeon._noHealRun=true;const bonusMana=typeof getSkillValue==='function'?getSkillValue('bonusMana',0):0;playerMaxMana=Math.round((100+bonusMana)*cl.manaMult);playerMana=playerMaxMana;dungeonShield=0;berserkCounter=0;thornsCounter=0;dungeon._hasRevive=false;dungeon._timeStop=0;dungeon._domainUsed=false;if(typeof gameStats!=='undefined')gameStats.dungeonsAttempted++;if(typeof applyChallengeStart==='function')applyChallengeStart();loadFloor(0);const clId=typeof getClassId==='function'?getClassId():'warrior';document.getElementById('dungeonLog').textContent=cl.icon||'⚔️'+' '+CLASSES[clId].name+' enters the '+FLOOR_THEMES[0].name+'...\n';refreshDungeon();if(dungeon.gameLoop)clearInterval(dungeon.gameLoop);dungeon.gameLoop=setInterval(dungeonTick,1000/30);}
 function loadFloor(floor){dungeon.floor=floor;const gen=genDungeon(floor);dungeon.map=gen.map;dungeon.enemies=gen.enemies;dungeon.chests=gen.chests;dungeon.npcs=gen.npcs||[];dungeon.puzzles=gen.puzzles||[];dungeon.events=gen.events||[];dungeon.px=gen.spawnX;dungeon.py=gen.spawnY;
   dungeon.explored=[];for(let y=0;y<DH;y++){dungeon.explored[y]=[];for(let x=0;x<DW;x++)dungeon.explored[y][x]=false;}
   document.getElementById('dFloorNum').textContent=(floor+1);
@@ -5926,18 +5919,18 @@ document.addEventListener('keydown',(e)=>{if(!dungeon.active)return;const dt=doc
     if(shKeys[e.key]!==undefined){e.preventDefault();summonShikigami(shOrder[shKeys[e.key]]);}
   }
   // Boogie Woogie (E) — swap with nearest enemy
-  if((e.key==='e'||e.key==='E')&&!e.repeat&&window.jjkBuffs&&window.jjkBuffs.boogieWoogie){e.preventDefault();
+  if((e.key==='e'||e.key==='E')&&!e.repeat&&isBuffActive('jjk','boogieWoogie')){e.preventDefault();
     let nearE2=null,nearD2=Infinity;for(const en of dungeon.enemies){if(!en.alive)continue;const d2=Math.sqrt((dungeon.px-en.x)**2+(dungeon.py-en.y)**2);if(d2<100&&d2<nearD2){nearD2=d2;nearE2=en;}}
     if(nearE2){const tx=dungeon.px,ty=dungeon.py;dungeon.px=nearE2.x;dungeon.py=nearE2.y;nearE2.x=tx;nearE2.y=ty;spawnDungeonParticle(dungeon.px,dungeon.py,'#ffdd44',10,5);spawnDungeonParticle(nearE2.x,nearE2.y,'#ffdd44',10,5);addDungeonLog('👏 BOOGIE WOOGIE! Swapped positions!');dReveal();dKeys.left=false;dKeys.right=false;dKeys.up=false;dKeys.down=false;}
     else addDungeonLog('No enemy nearby to swap with!');}
   // Domain Expansion (C)
-  if((e.key==='c'||e.key==='C')&&window.jjkBuffs&&window.jjkBuffs.domainExpansion&&!dungeon._domainUsed){e.preventDefault();
+  if((e.key==='c'||e.key==='C')&&isBuffActive('jjk','domainExpansion')&&!dungeon._domainUsed){e.preventDefault();
     dungeon._domainUsed=true;let dKills=0;
     for(const en of dungeon.enemies){if(!en.alive)continue;en.alive=false;dKills++;spawnDungeonParticle(en.x,en.y,'#cc2244',12,6);spawnDungeonParticle(en.x,en.y,'#440011',8,4);recordEnemy(en.data.name,en.data);trackKill();}
     spawnDungeonParticle(dungeon.px,dungeon.py,'#cc0022',20,8);addDungeonLog('🔴 DOMAIN EXPANSION: MALEVOLENT SHRINE! '+dKills+' enemies obliterated!');if(typeof playSFX==='function')playSFX('boss','C1','2n');}
   // Hollow Purple (V) — beam, BOSS FLOORS ONLY (once per floor)
   // Hollow Purple (Q) — boss only, needs Red+Blue
-  if((e.key==='q'||e.key==='Q')&&window.jjkBuffs&&window.jjkBuffs.hollowPurple&&!dungeon._purpleUsed){e.preventDefault();
+  if((e.key==='q'||e.key==='Q')&&isBuffActive('jjk','hollowPurple')&&!dungeon._purpleUsed){e.preventDefault();
     const hasBoss=dungeon.enemies.some(en=>en.alive&&en.isBoss);
     if(!hasBoss){addDungeonLog('🟣 Hollow Purple can only be used on boss floors!');}
     else if(!dungeon._redUsed||!dungeon._blueUsed){addDungeonLog('🟣 Use Red (F) and Blue (C) first to build up Hollow Purple!');}
@@ -6019,7 +6012,7 @@ document.addEventListener('keydown',(e)=>{if(!dungeon.active)return;const dt=doc
     }}
   // Cursed Red (F) — repel all nearby enemies away
   // Cursed Red (Z)
-  if((e.key==='z'||e.key==='Z')&&window.jjkBuffs&&window.jjkBuffs.red&&!dungeon._redUsed){e.preventDefault();
+  if((e.key==='z'||e.key==='Z')&&isBuffActive('jjk','red')&&!dungeon._redUsed){e.preventDefault();
     dungeon._redUsed=true;
     let rHits=0;
     for(const en of dungeon.enemies){if(!en.alive)continue;const rd=Math.sqrt((dungeon.px-en.x)**2+(dungeon.py-en.y)**2);
@@ -6030,10 +6023,10 @@ document.addEventListener('keydown',(e)=>{if(!dungeon.active)return;const dt=doc
         if(en.curHp<=0){en.alive=false;spawnDungeonParticle(en.x,en.y,en.data.color||'#cc3333',10,5);recordEnemy(en.data.name,en.data);trackKill();}}}
     spawnDungeonParticle(dungeon.px,dungeon.py,'#ff2222',15,6);spawnDungeonParticle(dungeon.px,dungeon.py,'#ff6644',10,4);
     addDungeonLog('🔴 CURSED RED! Blasted '+rHits+' enemies away!');
-    if(dungeon._blueUsed&&window.jjkBuffs&&window.jjkBuffs.hollowPurple)addDungeonLog('🟣 Red + Blue converging... HOLLOW PURPLE ready! Press V!');}
+    if(dungeon._blueUsed&&isBuffActive('jjk','hollowPurple'))addDungeonLog('🟣 Red + Blue converging... HOLLOW PURPLE ready! Press Q!');}
   // Cursed Blue (C) — pull enemies in and crush
   // Cursed Blue (X)
-  if((e.key==='x'||e.key==='X')&&window.jjkBuffs&&window.jjkBuffs.blue&&!dungeon._blueUsed){e.preventDefault();
+  if((e.key==='x'||e.key==='X')&&isBuffActive('jjk','blue')&&!dungeon._blueUsed){e.preventDefault();
     dungeon._blueUsed=true;
     let bHits=0;
     for(const en of dungeon.enemies){if(!en.alive)continue;const bd=Math.sqrt((dungeon.px-en.x)**2+(dungeon.py-en.y)**2);
@@ -6043,14 +6036,14 @@ document.addEventListener('keydown',(e)=>{if(!dungeon.active)return;const dt=doc
         if(en.curHp<=0){en.alive=false;spawnDungeonParticle(en.x,en.y,en.data.color||'#cc3333',10,5);recordEnemy(en.data.name,en.data);trackKill();}}}
     spawnDungeonParticle(dungeon.px,dungeon.py,'#4444ff',15,5);spawnDungeonParticle(dungeon.px,dungeon.py,'#6688ff',10,3);
     addDungeonLog('🔵 CURSED BLUE! Pulled '+bHits+' enemies in and crushed them!');
-    if(dungeon._redUsed&&window.jjkBuffs&&window.jjkBuffs.hollowPurple)addDungeonLog('🟣 Red + Blue converging... HOLLOW PURPLE ready! Press V!');}
+    if(dungeon._redUsed&&isBuffActive('jjk','hollowPurple'))addDungeonLog('🟣 Red + Blue converging... HOLLOW PURPLE ready! Press Q!');}
   // Curtain (F)
-  if((e.key==='f'||e.key==='F')&&window.jjkBuffs&&window.jjkBuffs.curtain&&!dungeon._curtainUsed){e.preventDefault();
+  if((e.key==='f'||e.key==='F')&&isBuffActive('jjk','curtain')&&!dungeon._curtainUsed){e.preventDefault();
     dungeon._curtainUsed=true;dungeonShield+=80;
     spawnDungeonParticle(dungeon.px,dungeon.py,'#4466aa',15,4);addDungeonLog('🔵 CURTAIN deployed! +80 shield!');}
   // Puppet Manipulation (G) — mind-control nearest enemy for 10 seconds
   // Puppet Manipulation (V)
-  if((e.key==='v'||e.key==='V')&&window.jjkBuffs&&window.jjkBuffs.puppet){e.preventDefault();
+  if((e.key==='v'||e.key==='V')&&isBuffActive('jjk','puppet')){e.preventDefault();
     let nearP=null,nearPD=Infinity;
     for(const en of dungeon.enemies){if(!en.alive||en.isBoss||en._puppet)continue;const d2=Math.sqrt((dungeon.px-en.x)**2+(dungeon.py-en.y)**2);if(d2<60&&d2<nearPD){nearPD=d2;nearP=en;}}
     if(nearP){
@@ -6400,11 +6393,14 @@ function refreshAbilities() {
       JJK_DISPLAY.forEach(j=>{
         const owned=jb[j.id];
         if(!owned)return;
-        jhtml+='<div style="background:linear-gradient(135deg,rgba(102,68,170,0.1),rgba(30,30,36,0.95));border:1px solid '+j.color+'44;border-radius:10px;padding:10px;">';
+        const dis=window.disabledBuffs&&window.disabledBuffs['jjk_'+j.id];
+        jhtml+='<div style="background:linear-gradient(135deg,rgba(102,68,170,'+(dis?'0.03':'0.1')+'),rgba(30,30,36,0.95));border:1px solid '+(dis?'#33333344':j.color+'44')+';border-radius:10px;padding:10px;opacity:'+(dis?'0.5':'1')+';">';
         jhtml+='<div style="display:flex;justify-content:space-between;align-items:center;">';
-        jhtml+='<strong style="color:'+j.color+';font-size:0.85rem;">'+j.icon+' '+j.name+'</strong>';
+        jhtml+='<strong style="color:'+(dis?'#666':j.color)+';font-size:0.85rem;">'+j.icon+' '+j.name+'</strong>';
+        jhtml+='<div style="display:flex;gap:4px;align-items:center;">';
         jhtml+='<span style="background:'+j.color+'33;color:'+j.color+';padding:2px 8px;border-radius:10px;font-size:0.65rem;font-weight:bold;">['+j.key+']</span>';
-        jhtml+='</div>';
+        jhtml+='<button class="smallButton" onclick="toggleBuff(\'jjk\',\''+j.id+'\')" style="font-size:0.6rem;padding:2px 6px;background:'+(dis?'linear-gradient(135deg,#443333,#332222)':'linear-gradient(135deg,#334433,#223322)')+';color:'+(dis?'#ff8888':'#88ff88')+';">'+(dis?'OFF':'ON')+'</button>';
+        jhtml+='</div></div>';
         jhtml+='<div style="font-size:0.72rem;color:#999;margin-top:4px;">'+j.desc+'</div>';
         jhtml+='</div>';
       });
@@ -6432,10 +6428,11 @@ function refreshAbilities() {
       let ohtml='';
       OP_DISPLAY.forEach(o=>{
         if(!ob[o.id])return;
-        ohtml+='<div style="background:linear-gradient(135deg,rgba(200,50,50,0.1),rgba(30,30,36,0.95));border:1px solid '+o.color+'44;border-radius:10px;padding:10px;">';
+        const dis=window.disabledBuffs&&window.disabledBuffs['op_'+o.id];
+        ohtml+='<div style="background:linear-gradient(135deg,rgba(200,50,50,'+(dis?'0.03':'0.1')+'),rgba(30,30,36,0.95));border:1px solid '+(dis?'#33333344':o.color+'44')+';border-radius:10px;padding:10px;opacity:'+(dis?'0.5':'1')+';">';
         ohtml+='<div style="display:flex;justify-content:space-between;align-items:center;">';
-        ohtml+='<strong style="color:'+o.color+';font-size:0.85rem;">'+o.icon+' '+o.name+'</strong>';
-        ohtml+='<span style="background:#cc222233;color:#ff6666;padding:2px 8px;border-radius:10px;font-size:0.65rem;font-weight:bold;">Passive</span>';
+        ohtml+='<strong style="color:'+(dis?'#666':o.color)+';font-size:0.85rem;">'+o.icon+' '+o.name+'</strong>';
+        ohtml+='<button class="smallButton" onclick="toggleBuff(\'op\',\''+o.id+'\')" style="font-size:0.6rem;padding:2px 6px;background:'+(dis?'linear-gradient(135deg,#443333,#332222)':'linear-gradient(135deg,#334433,#223322)')+';color:'+(dis?'#ff8888':'#88ff88')+';">'+(dis?'OFF':'ON')+'</button>';
         ohtml+='</div>';
         ohtml+='<div style="font-size:0.72rem;color:#999;margin-top:4px;">'+o.desc+'</div>';
         ohtml+='</div>';
@@ -7047,6 +7044,22 @@ function triggerEvent(ev){
 }
 
 // ══════════════════════════════════════
+// BUFF TOGGLE SYSTEM
+// ══════════════════════════════════════
+if(!window.disabledBuffs)window.disabledBuffs={};
+function isBuffActive(type,id){
+  if(type==='jjk')return window.jjkBuffs&&window.jjkBuffs[id]&&!window.disabledBuffs['jjk_'+id];
+  if(type==='op')return window.opBuffs&&window.opBuffs[id]&&!window.disabledBuffs['op_'+id];
+  return false;
+}
+window.toggleBuff=function(type,id){
+  const key=type+'_'+id;
+  window.disabledBuffs[key]=!window.disabledBuffs[key];
+  refreshAbilities();
+  if(typeof saveGame==='function')saveGame();
+};
+
+// ══════════════════════════════════════
 // TEN SHADOWS TECHNIQUE
 // ══════════════════════════════════════
 let tenShadowsUnlocked=false;
@@ -7353,6 +7366,7 @@ function saveGame(){
       tenShadowsUnlocked,unlockedShikigami:{...unlockedShikigami},
       jjkBuffs:window.jjkBuffs?{...window.jjkBuffs}:{},
       opBuffs:window.opBuffs?{...window.opBuffs}:{},
+      disabledBuffs:window.disabledBuffs?{...window.disabledBuffs}:{},
       version:2
     };
     localStorage.setItem('dungeonMasterSave',JSON.stringify(save));
@@ -7388,6 +7402,7 @@ function loadGame(){
     if(s.unlockedShikigami)Object.keys(s.unlockedShikigami).forEach(k=>{unlockedShikigami[k]=s.unlockedShikigami[k];});
     if(s.jjkBuffs){if(!window.jjkBuffs)window.jjkBuffs={};Object.keys(s.jjkBuffs).forEach(k=>{window.jjkBuffs[k]=s.jjkBuffs[k];});}
     if(s.opBuffs){if(!window.opBuffs)window.opBuffs={};Object.keys(s.opBuffs).forEach(k=>{window.opBuffs[k]=s.opBuffs[k];});}
+    if(s.disabledBuffs){if(!window.disabledBuffs)window.disabledBuffs={};Object.keys(s.disabledBuffs).forEach(k=>{window.disabledBuffs[k]=s.disabledBuffs[k];});}
     if(s.redeemedCodes)Object.keys(s.redeemedCodes).forEach(k=>{redeemedCodes[k]=s.redeemedCodes[k];});
     if(s.leaderboard){
       if(s.leaderboard.bestSwords)leaderboard.bestSwords=s.leaderboard.bestSwords;
