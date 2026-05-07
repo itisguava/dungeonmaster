@@ -5920,7 +5920,11 @@ function endDungeon(success){
 
 document.addEventListener('keydown',(e)=>{if(!dungeon.active)return;const dt=document.getElementById('tab-dungeon');if(!dt||!dt.classList.contains('active'))return;if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A'){e.preventDefault();dKeys.left=true;}if(e.key==='ArrowRight'||e.key==='d'||e.key==='D'){e.preventDefault();dKeys.right=true;}if(e.key==='ArrowUp'||e.key==='w'||e.key==='W'){e.preventDefault();dKeys.up=true;}if(e.key==='ArrowDown'||e.key==='s'||e.key==='S'){e.preventDefault();dKeys.down=true;}if(e.key===' '){e.preventDefault();dKeys.attack=true;}if(e.key>='1'&&e.key<='4'){e.preventDefault();useAbility(parseInt(e.key)-1);}
   // Ten Shadows: 5-9 summon shikigami
-  if(e.key>='5'&&e.key<='9'&&typeof tenShadowsUnlocked!=='undefined'&&tenShadowsUnlocked){e.preventDefault();const shIdx=parseInt(e.key)-5;const shOrder=['toad','serpent','rabbit','elephant','ox','tiger','mahoraga'];if(shIdx<shOrder.length)summonShikigami(shOrder[shIdx]);}
+  if(typeof tenShadowsUnlocked!=='undefined'&&tenShadowsUnlocked){
+    const shOrder=['toad','serpent','rabbit','elephant','ox','tiger','mahoraga'];
+    const shKeys={'5':0,'6':1,'7':2,'8':3,'9':4,'0':5,'-':6};
+    if(shKeys[e.key]!==undefined){e.preventDefault();summonShikigami(shOrder[shKeys[e.key]]);}
+  }
   // Boogie Woogie (E) — swap with nearest enemy
   if((e.key==='e'||e.key==='E')&&!e.repeat&&window.jjkBuffs&&window.jjkBuffs.boogieWoogie){e.preventDefault();
     let nearE2=null,nearD2=Infinity;for(const en of dungeon.enemies){if(!en.alive)continue;const d2=Math.sqrt((dungeon.px-en.x)**2+(dungeon.py-en.y)**2);if(d2<100&&d2<nearD2){nearD2=d2;nearE2=en;}}
@@ -6348,7 +6352,7 @@ function refreshAbilities() {
     if(tenShadowsUnlocked){
       const sgGrid=document.getElementById('shikigamiGrid');
       const shOrder=['toad','serpent','rabbit','elephant','ox','tiger','mahoraga'];
-      const shKeys=['5','6','7','8','9','—','—'];
+      const shKeys=['5','6','7','8','9','0','-'];
       let shtml='';
       SHIKIGAMI.forEach((sh,idx)=>{
         const owned=unlockedShikigami[sh.id];
