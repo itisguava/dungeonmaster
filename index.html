@@ -5199,7 +5199,9 @@ function dungeonTick(){
     if(tile===DT.PUZZLE&&dungeon.puzzles){for(const pz of dungeon.puzzles){if(!pz.solved&&Math.abs(dungeon.px-pz.x)<12&&Math.abs(dungeon.py-pz.y)<12){
       // Simple puzzle: solve immediately with a quick challenge
       const num1=2+Math.floor(Math.random()*8),num2=2+Math.floor(Math.random()*8);
+      dKeys.left=false;dKeys.right=false;dKeys.up=false;dKeys.down=false;dKeys.attack=false;
       const answer=prompt('🧩 Puzzle: What is '+num1+' × '+num2+'?');
+      dKeys.left=false;dKeys.right=false;dKeys.up=false;dKeys.down=false;dKeys.attack=false;
       if(parseInt(answer)===num1*num2){pz.solved=true;dungeon.map[pty2][ptx2]=DT.FLOOR;const bonus=20+dungeon.floor*8;updateGold(bonus);addDungeonLog('🧩 Puzzle solved! +'+bonus+' gold!');spawnDungeonParticle(pz.x,pz.y,'#cc88ff',10,3);spawnFloatingNumber(pz.x,pz.y-10,'+'+bonus+'g','#ffdd44');}
       else{addDungeonLog('🧩 Wrong answer! The puzzle resets...');}
     }}}
@@ -6020,30 +6022,63 @@ document.addEventListener('keydown',(e)=>{if(!dungeon.active)return;const dt=doc
     },1000/30);
     }}
   // Cursed Red (F) — repel all nearby enemies away
-  // Cursed Red (Z)
+  // Cursed Red (Z) — shoots red repulsion blast in facing direction
   if((e.key==='z'||e.key==='Z')&&isBuffActive('jjk','red')&&!dungeon._redUsed){e.preventDefault();
     dungeon._redUsed=true;
+    // Fire red projectile in facing direction
+    const rdirs={up:{dx:0,dy:-1},down:{dx:0,dy:1},left:{dx:-1,dy:0},right:{dx:1,dy:0}};
+    const rd=rdirs[dungeon.facing];
     let rHits=0;
-    for(const en of dungeon.enemies){if(!en.alive)continue;const rd=Math.sqrt((dungeon.px-en.x)**2+(dungeon.py-en.y)**2);
-      if(rd<70){rHits++;const ra=Math.atan2(en.y-dungeon.py,en.x-dungeon.px);const pushDist=40;
-        const nx=en.x+Math.cos(ra)*pushDist,ny=en.y+Math.sin(ra)*pushDist;
-        if(!dSolid(nx,ny)){en.x=nx;en.y=ny;}
-        const rdmg=15;en.curHp-=rdmg;spawnFloatingNumber(en.x,en.y-10,'-'+rdmg,'#ff2222');
-        if(en.curHp<=0){en.alive=false;spawnDungeonParticle(en.x,en.y,en.data.color||'#cc3333',10,5);recordEnemy(en.data.name,en.data);trackKill();}}}
+    // Spawn red blast particles along the path
+    for(let s=1;s<=8;s++){
+      const bx=dungeon.px+rd.dx*s*DTS,by=dungeon.py+rd.dy*s*DTS;
+      spawnDungeonParticle(bx,by,'#ff2222',3,2);spawnDungeonParticle(bx,by,'#ff6644',2,1);
+    }
+    // Hit and push all enemies in range
+    for(const en of dungeon.enemies){if(!en.alive)continue;const erd=Math.sqrt((dungeon.px-en.x)**2+(dungeon.py-en.y)**2);
+      if(erd<100){
+        // Check if enemy is roughly in the firing direction
+        const ang=Math.atan2(en.y-dungeon.py,en.x-dungeon.px);
+        const fAng=Math.atan2(rd.dy,rd.dx);
+        const diff=Math.abs(ang-fAng);
+        if(diff<1.2||diff>Math.PI*2-1.2){
+          rHits++;const pushAng=Math.atan2(en.y-dungeon.py,en.x-dungeon.px);const pushDist=50;
+          const nx=en.x+Math.cos(pushAng)*pushDist,ny=en.y+Math.sin(pushAng)*pushDist;
+          if(!dSolid(nx,ny)){en.x=nx;en.y=ny;}
+          const rdmg=20+dungeon.floor;en.curHp-=rdmg;
+          spawnFloatingNumber(en.x,en.y-10,'-'+rdmg,'#ff2222');
+          spawnDungeonParticle(en.x,en.y,'#ff4422',8,4);
+          if(en.curHp<=0){en.alive=false;spawnDungeonParticle(en.x,en.y,en.data.color||'#cc3333',10,5);recordEnemy(en.data.name,en.data);trackKill();}
+        }
+      }}
+    // Big red shockwave from player
     spawnDungeonParticle(dungeon.px,dungeon.py,'#ff2222',15,6);spawnDungeonParticle(dungeon.px,dungeon.py,'#ff6644',10,4);
+    spawnFloatingNumber(dungeon.px,dungeon.py-25,'🔴 RED!','#ff2222');
+    if(typeof playSFX==='function')playSFX('hit','E2','8n');
     addDungeonLog('🔴 CURSED RED! Blasted '+rHits+' enemies away!');
     if(dungeon._blueUsed&&isBuffActive('jjk','hollowPurple'))addDungeonLog('🟣 Red + Blue converging... HOLLOW PURPLE ready! Press Q!');}
-  // Cursed Blue (C) — pull enemies in and crush
-  // Cursed Blue (X)
+  // Cursed Blue (X) — creates blue vortex pulling enemies in and crushing
   if((e.key==='x'||e.key==='X')&&isBuffActive('jjk','blue')&&!dungeon._blueUsed){e.preventDefault();
     dungeon._blueUsed=true;
     let bHits=0;
+    // Blue vortex particles spiraling inward
+    for(let s=0;s<12;s++){
+      const a=s*Math.PI/6;const vr=50+Math.random()*30;
+      spawnDungeonParticle(dungeon.px+Math.cos(a)*vr,dungeon.py+Math.sin(a)*vr,'#4444ff',2,1);
+      spawnDungeonParticle(dungeon.px+Math.cos(a+0.5)*vr*0.7,dungeon.py+Math.sin(a+0.5)*vr*0.7,'#6688ff',2,1);
+    }
+    // Pull all nearby enemies toward player and crush
     for(const en of dungeon.enemies){if(!en.alive)continue;const bd=Math.sqrt((dungeon.px-en.x)**2+(dungeon.py-en.y)**2);
-      if(bd<80){bHits++;const ba=Math.atan2(dungeon.py-en.y,dungeon.px-en.x);
-        en.x+=Math.cos(ba)*25;en.y+=Math.sin(ba)*25;
-        const bdmg=30;en.curHp-=bdmg;spawnFloatingNumber(en.x,en.y-10,'-'+bdmg,'#4444ff');
+      if(bd<90){bHits++;const ba=Math.atan2(dungeon.py-en.y,dungeon.px-en.x);
+        en.x+=Math.cos(ba)*30;en.y+=Math.sin(ba)*30;
+        const bdmg=35+dungeon.floor;en.curHp-=bdmg;
+        spawnFloatingNumber(en.x,en.y-10,'-'+bdmg,'#4444ff');
+        spawnDungeonParticle(en.x,en.y,'#4466ff',6,3);
         if(en.curHp<=0){en.alive=false;spawnDungeonParticle(en.x,en.y,en.data.color||'#cc3333',10,5);recordEnemy(en.data.name,en.data);trackKill();}}}
-    spawnDungeonParticle(dungeon.px,dungeon.py,'#4444ff',15,5);spawnDungeonParticle(dungeon.px,dungeon.py,'#6688ff',10,3);
+    // Blue implosion at player
+    spawnDungeonParticle(dungeon.px,dungeon.py,'#4444ff',18,5);spawnDungeonParticle(dungeon.px,dungeon.py,'#88aaff',10,3);
+    spawnFloatingNumber(dungeon.px,dungeon.py-25,'🔵 BLUE!','#4466ff');
+    if(typeof playSFX==='function')playSFX('hit','C3','8n');
     addDungeonLog('🔵 CURSED BLUE! Pulled '+bHits+' enemies in and crushed them!');
     if(dungeon._redUsed&&isBuffActive('jjk','hollowPurple'))addDungeonLog('🟣 Red + Blue converging... HOLLOW PURPLE ready! Press Q!');}
   // Curtain (F)
@@ -6316,10 +6351,11 @@ function refreshAbilities() {
   for (let i = 0; i < 4; i++) {
     const abId = equippedAbilitySlots[i];
     const ab = abId ? ABILITIES.find(a => a.id === abId) : null;
-    eqHtml += '<div style="width:70px;height:70px;background:#16161a;border:2px solid ' + (ab ? ab.color : '#333') + ';border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:0.7rem;">';
+    eqHtml += '<div style="width:70px;background:#16161a;border:2px solid ' + (ab ? ab.color : '#333') + ';border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:0.7rem;padding:4px 0;">';
     eqHtml += '<div style="font-size:1.2rem;">' + (ab ? ab.icon : '—') + '</div>';
     eqHtml += '<div style="color:#888;">[' + (i + 1) + ']</div>';
     if (ab) eqHtml += '<div style="color:#aaa;font-size:0.6rem;">' + ab.manaCost + ' MP</div>';
+    if (ab) eqHtml += '<div style="cursor:pointer;color:#cc4444;font-size:0.55rem;margin-top:2px;" onclick="unequipAbility('+i+')">✕ remove</div>';
     eqHtml += '</div>';
   }
   eqEl.innerHTML = eqHtml;
@@ -6464,12 +6500,20 @@ window.unlockAbility = function(id) {
 };
 
 window.equipAbility = function(id) {
-  // Put in first empty slot, or replace last
+  // Put in first empty slot
   for (let i = 0; i < 4; i++) {
-    if (!equippedAbilitySlots[i]) { equippedAbilitySlots[i] = id; refreshAbilities(); return; }
+    if (!equippedAbilitySlots[i]) { equippedAbilitySlots[i] = id; refreshAbilities(); if(typeof saveGame==='function')saveGame(); return; }
   }
-  equippedAbilitySlots[3] = id;
+  // All slots full — ask which to replace
+  const choice = prompt('All slots full. Replace which slot? (1-4)');
+  const idx = parseInt(choice) - 1;
+  if (idx >= 0 && idx < 4) { equippedAbilitySlots[idx] = id; refreshAbilities(); if(typeof saveGame==='function')saveGame(); }
+};
+
+window.unequipAbility = function(slot) {
+  equippedAbilitySlots[slot] = null;
   refreshAbilities();
+  if(typeof saveGame==='function')saveGame();
 };
 
 // ══════════════════════════════════════
@@ -7037,6 +7081,8 @@ function spawnDungeonEvents(rooms,floor){
 
 function triggerEvent(ev){
   if(!ev.active)return;
+  // Reset movement keys so player doesn't walk after prompt
+  dKeys.left=false;dKeys.right=false;dKeys.up=false;dKeys.down=false;dKeys.attack=false;
   // Show options as prompt
   let msg=ev.icon+' '+ev.name+'\n'+ev.desc+'\n\n';
   ev.options.forEach((o,i)=>{msg+=(i+1)+'. '+o.text+'\n';});
@@ -7050,6 +7096,7 @@ function triggerEvent(ev){
     updateDungeonHp();
   }else{addDungeonLog(ev.icon+' You walk away.');}
   ev.active=false;
+  dKeys.left=false;dKeys.right=false;dKeys.up=false;dKeys.down=false;dKeys.attack=false;
 }
 
 // ══════════════════════════════════════
