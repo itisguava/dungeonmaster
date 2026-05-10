@@ -6648,6 +6648,8 @@ document.getElementById('prestigeBtn').addEventListener('click',()=>{
   document.querySelectorAll('.dungeon-material').forEach(opt=>{opt.disabled=true;});
   playerMana=playerMaxMana;
   gameStats.swordsForged=0;gameStats.dungeonsAttempted=0;gameStats.dungeonsCompleted=0;
+  gameStats.highestFloor=0;gameStats.totalKills=0;gameStats.totalGoldEarned=0;gameStats.floorsCleared=0;gameStats.deaths=0;gameStats.enchantSpins=0;
+  dungeonCheckpoint=0;
   setGold(startG);
   addDungeonLog('✨ PRESTIGE '+prestigeLevel+'! Gold +'+Math.round(prestigeLevel*5)+'% | Luck +'+Math.round(prestigeLevel*3)+'%');
   refreshStats();refreshInventory();
