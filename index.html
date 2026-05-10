@@ -1000,6 +1000,10 @@
           <h3 style="color:#cc88ff;">✨ Utility</h3>
           <div id="skillTreeUtility"></div>
         </div>
+        <div style="flex:1;min-width:250px;">
+          <h3 style="color:#c89b3c;">🔨 Forging</h3>
+          <div id="skillTreeForging"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -1996,8 +2000,15 @@ function calculateSword(){
   dmg+=Math.round(metalBonus*0.6);dur+=Math.round(metalBonus*0.4);
   dmg+=Math.round(lengthBonus*0.5);dur+=Math.round(lengthBonus*0.5);
   dmg+=Math.round(techBonus*0.9);dur+=Math.round(techBonus*0.9);
+  // Forging skill tree bonuses
+  if(typeof getSkillValue==='function'){
+    dmg+=getSkillValue('forgeDmgBonus',0);
+    dur+=getSkillValue('forgeDurBonus',0);
+    wgt=Math.max(1,wgt-getSkillValue('forgeWgtReduce',0));
+  }
   if(dur<1)dur=1;
-  const score=dmg+dur-wgt;
+  let score=dmg+dur-wgt;
+  if(typeof getSkillValue==='function')score+=getSkillValue('forgeScoreBonus',0);
   let grade='D',title='Crude Blade';
   if(score>40){grade='C';title='Decent Sword';}if(score>55){grade='B';title='Fine Weapon';}if(score>70){grade='A';title='Masterwork Blade';}if(score>85){grade='S';title='Legendary Sword';}
   const mn={iron:'iron',steel:'forged steel',damascus:'damascus steel',mithril:'shimmering mithril',titanium:'titanium',obsidian:'razor-edged obsidian',dragonbone:'dragonbone',adamantine:'adamantine',deepstone:'deepstone',glowmetal:'glowmetal',cavecrystal:'crystal',shadowsteel:'shadow steel',soulforge:'soulforged',cursedmetal:'cursed metal'}[metal];
@@ -2117,6 +2128,9 @@ drawQuenchVisual(0);
     else if(dist<10){bonus=7;text='👍 Good quench! +7 Durability';statusColor='#88cc44';}
     else if(dist<18){bonus=3;text='Okay quench. +3 Durability';statusColor='#ccaa33';}
     else{bonus=-3;text='💥 Bad quench! -3 Durability (cracked!)';statusColor='#cc4444';}
+    // Quench Master skill bonus
+    const qb=typeof getSkillValue==='function'?getSkillValue('quenchBonus',0):0;
+    if(qb>0&&bonus>0){bonus+=qb;text+=' (+'+qb+' Quench Master)';}
     s.sw.durability+=bonus;
     if(s.sw.durability<1)s.sw.durability=1;
     s.sw.quenched=true;
@@ -5162,6 +5176,9 @@ function dungeonTick(){
   let projSpeed=isBuffActive('jjk','projection')?DSPEED*1.5:DSPEED;
   if(isBuffActive('op','pika'))projSpeed=DSPEED*2;
   if(isBuffActive('op','nika'))projSpeed=Math.max(projSpeed,DSPEED*1.5);
+  // Light Feet skill
+  const speedSkill=typeof getSkillValue==='function'?getSkillValue('speedMult',1):1;
+  projSpeed*=speedSkill;
   if(dKeys.left)dx-=projSpeed;if(dKeys.right)dx+=projSpeed;if(dKeys.up)dy-=projSpeed;if(dKeys.down)dy+=projSpeed;
   if(dx&&dy){dx*=0.707;dy*=0.707;}
   if(dy<0)dungeon.facing='up';else if(dy>0)dungeon.facing='down';else if(dx<0)dungeon.facing='left';else if(dx>0)dungeon.facing='right';
@@ -5352,10 +5369,17 @@ function dungeonTick(){
           if(thornsCounter>0){const ref=Math.round(ed2*0.5);e.curHp-=ref;}
           if(isBuffActive('jjk','infinity'))ed2=Math.max(1,Math.round(ed2*0.5));
           if(isBuffActive('op','gomu')&&Math.random()<0.25){ed2=0;spawnFloatingNumber(dungeon.px,dungeon.py-20,'GOMU DODGE!','#ff4444');spawnDungeonParticle(dungeon.px,dungeon.py,'#ff6644',6,3);}
+          // Evasion skill dodge
+          const evadeChance=typeof getSkillValue==='function'?getSkillValue('dodgeChance',0):0;
+          if(evadeChance>0&&ed2>0&&Math.random()<evadeChance){ed2=0;spawnFloatingNumber(dungeon.px,dungeon.py-20,'DODGE!','#88bbff');}
+          // Thorns Aura skill
+          const thornsPct2=typeof getSkillValue==='function'?getSkillValue('thornsPct',0):0;
+          if(thornsPct2>0&&ed2>0){const tRef=Math.round(ed2*thornsPct2);e.curHp-=tRef;}
           dungeon.hp-=ed2;dungeon._lastHitBy=e.data.name;
           spawnFloatingNumber(dungeon.px+Math.random()*10-5,dungeon.py-15,'-'+ed2,'#ff3333');
           updateDungeonHp();
-          if(dungeon.hp<=0){endDungeon(false);return;}
+          // Second Chance skill
+          if(dungeon.hp<=0){const sc2=typeof getSkillValue==='function'?getSkillValue('surviveChance',0):0;if(sc2>0&&Math.random()<sc2&&!dungeon._secondChanceUsed){dungeon._secondChanceUsed=true;dungeon.hp=1;spawnFloatingNumber(dungeon.px,dungeon.py-25,'SECOND CHANCE!','#ffdd44');spawnDungeonParticle(dungeon.px,dungeon.py,'#ffdd44',12,4);addDungeonLog('💫 Second Chance! Survived at 1 HP!');updateDungeonHp();}else{endDungeon(false);return;}}
         }
       }
     } else {
@@ -5463,6 +5487,9 @@ function dungeonTick(){
         // Warrior on-kill heal
         if(typeof getPlayerClass==='function'){const cl3=getPlayerClass();if(cl3.onKillHeal>0){dungeon.hp=Math.min(dungeon.maxHp,dungeon.hp+cl3.onKillHeal);}}
       }
+      // Life Steal skill (heal % of damage dealt, even if enemy survives)
+      const lsPct=typeof getSkillValue==='function'?getSkillValue('lifeStealPct',0):0;
+      if(lsPct>0){const lsHeal=Math.max(1,Math.round(pd*lsPct));dungeon.hp=Math.min(dungeon.maxHp,dungeon.hp+lsHeal);}
       updateDungeonHp();dungeon.nearEnemy=null;
       // Cleave & Dismantle — hit all enemies in range
       if(isBuffActive('jjk','cleave')){
@@ -5480,9 +5507,24 @@ function dungeonTick(){
   // Dungeon event interaction
   if(dungeon.events){for(const ev of dungeon.events){if(!ev.active)continue;if(Math.abs(dungeon.px-ev.x)<16&&Math.abs(dungeon.py-ev.y)<16){triggerEvent(ev);}}}
   const ptx=Math.floor(dungeon.px/DTS),pty=Math.floor(dungeon.py/DTS);
-  const isEndless=document.getElementById('endlessModeToggle')&&document.getElementById('endlessModeToggle').checked;
   if(ptx>=0&&ptx<DW&&pty>=0&&pty<DH&&dungeon.map[pty][ptx]===DT.STAIRS&&dKeys.down){
-    if(dungeon.floor<19||isEndless){
+    const nextFloor=dungeon.floor+1;
+    // At floor 20 or every 10 floors after — give choice to continue or leave
+    if(dungeon.floor>=19&&(dungeon.floor===19||(dungeon.floor>=19&&(nextFloor)%10===0))){
+      dKeys.left=false;dKeys.right=false;dKeys.up=false;dKeys.down=false;dKeys.attack=false;
+      const floorNum=dungeon.floor+1;
+      const choice=confirm('🏆 Floor '+floorNum+' cleared!\n\n'+
+        'Loot: '+dungeon.loot.length+' items\n'+
+        'You can leave now with your rewards,\nor continue into the abyss...\n\n'+
+        'OK = Keep going (enemies get harder)\nCancel = Leave with rewards');
+      dKeys.left=false;dKeys.right=false;dKeys.up=false;dKeys.down=false;dKeys.attack=false;
+      if(!choice){
+        addDungeonLog('🏆 You chose to leave at Floor '+(floorNum)+'!');
+        endDungeon(true);return;
+      }
+      addDungeonLog('⚡ You descend deeper into the abyss...');
+    }
+    if(dungeon.floor<19||dungeon.floor>=19){
       dungeon.floor++;dungeon._floorTimer=0;dungeon._purpleUsed=false;dungeon._curtainUsed=false;dungeon._redUsed=false;dungeon._blueUsed=false;loadFloor(dungeon.floor);
       if(typeof checkDungeonCheckpoint==='function')checkDungeonCheckpoint();
       const themeName=FLOOR_THEMES[Math.min(dungeon.floor,FLOOR_THEMES.length-1)].name;
@@ -5490,7 +5532,7 @@ function dungeonTick(){
       else{addDungeonLog('Floor '+(dungeon.floor+1)+': '+themeName);}
       if(typeof isBossFloor==='function'&&isBossFloor(dungeon.floor)){const bd=DUNGEON_BOSSES[dungeon.floor];addDungeonLog('👑 BOSS: '+bd.name+' — '+bd.desc);if(typeof playSFX==='function')playSFX('boss','C2','4n');}
       const heal=Math.round(dungeon.maxHp*0.2);dungeon.hp=Math.min(dungeon.maxHp,dungeon.hp+heal);addDungeonLog('Healed '+heal+' HP.');updateDungeonHp();
-    }else{addDungeonLog('Dungeon complete!');endDungeon(true);return;}
+    }
   }
   const cvs=document.getElementById('dungeonCanvas');dungeon.camX=dungeon.px-cvs.width/2;dungeon.camY=dungeon.py-cvs.height/2;
   dungeon.camX=Math.max(0,Math.min(DW*DTS-cvs.width,dungeon.camX));dungeon.camY=Math.max(0,Math.min(DH*DTS-cvs.height,dungeon.camY));
@@ -5889,7 +5931,7 @@ function loadFloor(floor){dungeon.floor=floor;const gen=genDungeon(floor);dungeo
   document.getElementById('dFloorNum').textContent=(floor+1);
   if(dungeon.modifier&&dungeon.modifier.id!=='normal')addDungeonLog('⚠️ '+dungeon.modifier.name+': '+dungeon.modifier.desc);
   updateDungeonHp();}
-function dReveal(){const r=4;const ptx=Math.floor(dungeon.px/DTS),pty=Math.floor(dungeon.py/DTS);for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){const nx=ptx+dx,ny=pty+dy;if(nx>=0&&nx<DW&&ny>=0&&ny<DH)dungeon.explored[ny][nx]=true;}}
+function dReveal(){const vBonus=typeof getSkillValue==='function'?getSkillValue('visionBonus',0):0;const r=4+vBonus;const ptx=Math.floor(dungeon.px/DTS),pty=Math.floor(dungeon.py/DTS);for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){const nx=ptx+dx,ny=pty+dy;if(nx>=0&&nx<DW&&ny>=0&&ny<DH)dungeon.explored[ny][nx]=true;}}
 function showDeathScreen(){
   const ds=document.getElementById('deathScreen');
   const dc=document.getElementById('deathContent');
@@ -6670,17 +6712,37 @@ const SKILL_TREE=[
   {id:'doubleStrike',name:'Double Strike',desc:'+4% chance to hit twice',branch:'combat',icon:'⚡',maxLvl:3,effect:lv=>({doubleChance:lv*0.04}),cost:2},
   {id:'executioner',name:'Executioner',desc:'+15% DMG to enemies below 25% HP',branch:'combat',icon:'☠️',maxLvl:3,effect:lv=>({execMult:lv*0.15}),cost:2},
   {id:'weaponMaster',name:'Weapon Master',desc:'+8% all weapon stats',branch:'combat',icon:'🔥',maxLvl:3,effect:lv=>({allStatMult:1+lv*0.08}),cost:3},
+  {id:'attackSpeed',name:'Swift Strikes',desc:'+10% attack speed (faster swing)',branch:'combat',icon:'💨',maxLvl:3,effect:lv=>({atkSpeedBonus:lv*0.1}),cost:2},
+  {id:'lifeSteal',name:'Life Steal',desc:'Heal 3% of damage dealt',branch:'combat',icon:'🩸',maxLvl:3,effect:lv=>({lifeStealPct:lv*0.03}),cost:2},
+  {id:'comboMaster',name:'Combo Master',desc:'Combo multiplier builds 20% faster',branch:'combat',icon:'🔗',maxLvl:3,effect:lv=>({comboBonus:lv*0.2}),cost:3},
   // Defense
   {id:'toughness',name:'Toughness',desc:'+10 max HP',branch:'defense',icon:'❤️',maxLvl:5,effect:lv=>({bonusHp:lv*10}),cost:1},
   {id:'armor',name:'Thick Skin',desc:'+2 damage reduction',branch:'defense',icon:'🛡️',maxLvl:5,effect:lv=>({dmgReduce:lv*2}),cost:1},
   {id:'regen',name:'Regeneration',desc:'Heal 1 HP per 3 seconds in dungeon',branch:'defense',icon:'💚',maxLvl:3,effect:lv=>({regenRate:lv}),cost:2},
   {id:'lastStand',name:'Last Stand',desc:'+25% DMG when below 30% HP',branch:'defense',icon:'🔶',maxLvl:2,effect:lv=>({lastStandMult:lv*0.25}),cost:3},
+  {id:'dodgeChance',name:'Evasion',desc:'+4% chance to dodge attacks',branch:'defense',icon:'🌀',maxLvl:5,effect:lv=>({dodgeChance:lv*0.04}),cost:1},
+  {id:'thornsAura',name:'Thorn Aura',desc:'Reflect 5% damage back to attackers',branch:'defense',icon:'🌹',maxLvl:3,effect:lv=>({thornsPct:lv*0.05}),cost:2},
+  {id:'shieldBoost',name:'Shield Mastery',desc:'+20% shield ability effectiveness',branch:'defense',icon:'🔰',maxLvl:3,effect:lv=>({shieldMult:1+lv*0.2}),cost:2},
+  {id:'reviveChance',name:'Second Chance',desc:'+5% chance to survive a killing blow at 1 HP',branch:'defense',icon:'💫',maxLvl:3,effect:lv=>({surviveChance:lv*0.05}),cost:3},
   // Utility
   {id:'fortune',name:'Fortune',desc:'+8% gold from all sources',branch:'utility',icon:'💰',maxLvl:5,effect:lv=>({goldMult:1+lv*0.08}),cost:1},
   {id:'looter',name:'Looter',desc:'+10% dungeon chest chance',branch:'utility',icon:'🎁',maxLvl:3,effect:lv=>({lootChance:lv*0.1}),cost:1},
   {id:'manaPool',name:'Mana Well',desc:'+15 max mana',branch:'utility',icon:'💙',maxLvl:5,effect:lv=>({bonusMana:lv*15}),cost:1},
   {id:'manaRegen',name:'Mana Flow',desc:'+30% mana regen speed',branch:'utility',icon:'🌊',maxLvl:3,effect:lv=>({manaRegenMult:1+lv*0.3}),cost:2},
-  {id:'forgeBonus',name:'Master Smith',desc:'+3 bonus to all forge mini-games',branch:'utility',icon:'🔨',maxLvl:3,effect:lv=>({forgeMiniBonus:lv*3}),cost:2}
+  {id:'forgeBonus',name:'Master Smith',desc:'+3 bonus to all forge mini-games',branch:'utility',icon:'🔨',maxLvl:3,effect:lv=>({forgeMiniBonus:lv*3}),cost:2},
+  {id:'xpBoost',name:'Quick Learner',desc:'+10% XP from all sources',branch:'utility',icon:'📚',maxLvl:5,effect:lv=>({xpMult:1+lv*0.1}),cost:1},
+  {id:'moveSpeed',name:'Light Feet',desc:'+8% movement speed in dungeon',branch:'utility',icon:'👟',maxLvl:3,effect:lv=>({speedMult:1+lv*0.08}),cost:2},
+  {id:'visionRange',name:'Eagle Eye',desc:'+1 tile vision range in dungeon',branch:'utility',icon:'👁️',maxLvl:3,effect:lv=>({visionBonus:lv}),cost:2},
+  {id:'allyBoost',name:'Beast Tamer',desc:'+15% ally/summon damage and HP',branch:'utility',icon:'🐺',maxLvl:3,effect:lv=>({allyMult:1+lv*0.15}),cost:3},
+  // Forging
+  {id:'forgeDmg',name:'Hotter Forge',desc:'+3 bonus DMG on all forged weapons',branch:'forging',icon:'🔥',maxLvl:5,effect:lv=>({forgeDmgBonus:lv*3}),cost:1},
+  {id:'forgeDur',name:'Tempered Steel',desc:'+3 bonus DUR on all forged weapons',branch:'forging',icon:'🛡️',maxLvl:5,effect:lv=>({forgeDurBonus:lv*3}),cost:1},
+  {id:'forgeWeight',name:'Lightweight Alloy',desc:'-1 weight on all forged weapons',branch:'forging',icon:'🪶',maxLvl:3,effect:lv=>({forgeWgtReduce:lv}),cost:2},
+  {id:'forgeGrade',name:'Quality Control',desc:'+5 score bonus (better grades)',branch:'forging',icon:'⭐',maxLvl:3,effect:lv=>({forgeScoreBonus:lv*5}),cost:2},
+  {id:'quenchMaster',name:'Quench Master',desc:'+3 bonus DUR from quenching',branch:'forging',icon:'💧',maxLvl:3,effect:lv=>({quenchBonus:lv*3}),cost:1},
+  {id:'enchantLuck',name:'Enchant Luck',desc:'+5% rare enchantment chance',branch:'forging',icon:'🍀',maxLvl:5,effect:lv=>({enchantLuck:lv*0.05}),cost:1},
+  {id:'doubleSword',name:'Double Forge',desc:'+5% chance to forge 2 swords at once',branch:'forging',icon:'⚔️',maxLvl:3,effect:lv=>({doubleForge:lv*0.05}),cost:3},
+  {id:'materialSaver',name:'Material Saver',desc:'+20% chance to not consume dungeon materials',branch:'forging',icon:'♻️',maxLvl:3,effect:lv=>({matSaveChance:lv*0.2}),cost:2}
 ];
 const skillLevels={};
 SKILL_TREE.forEach(s=>skillLevels[s.id]=0);
@@ -6714,7 +6776,7 @@ window.upgradeSkill=function(id){
 };
 
 function refreshSkillTree(){
-  ['combat','defense','utility'].forEach(branch=>{
+  ['combat','defense','utility','forging'].forEach(branch=>{
     const el=document.getElementById('skillTree'+branch.charAt(0).toUpperCase()+branch.slice(1));
     const skills=SKILL_TREE.filter(s=>s.branch===branch);
     let html='';
