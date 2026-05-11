@@ -4821,9 +4821,9 @@ const SECRET_CODES = {
     name: 'Six Eyes', desc: 'Gojo\'s Six Eyes. Max mana set to 1000. Mana costs halved. Abilities scale 2x faster with floor depth.',
     jjkBuff: 'sixEyes'
   },
-  'FULLSKILLS': {
-    name: 'Full Skills', desc: 'Max out every skill in the skill tree instantly.',
-    fullSkills: true
+  'RIKA': {
+    name: 'Rika — Queen of Curses', desc: 'Unlocks Rika, the most powerful shikigami. Press = to summon.',
+    unlockRika: true
   }
 };
 
@@ -4908,12 +4908,12 @@ document.getElementById('redeemCodeBtn').addEventListener('click', () => {
     result.innerHTML = '<span style="color:#ff4444;">🏴‍☠️ DEVIL FRUIT AWAKENED!</span><br><span style="color:#ffdddd;font-weight:bold;">' + secret.name + '</span><br><span style="color:#aaa;">' + secret.desc + '</span>';
     result.style.color = '#ff4444';
     addDungeonLog('🏴‍☠️ ' + secret.name + ' power unlocked!');
-  } else if (secret.fullSkills) {
-    SKILL_TREE.forEach(sk=>{skillLevels[sk.id]=sk.maxLvl;});
-    result.innerHTML='<span style="color:#44dd77;font-size:1.1rem;">🌟 ALL SKILLS MAXED!</span><br><span style="color:#aaa;">Every skill in the tree is now at max level.</span>';
-    result.style.color='#44dd77';
-    addDungeonLog('🌟 All skills maxed out!');
-    if(typeof refreshSkillTree==='function')refreshSkillTree();
+  } else if (secret.unlockRika) {
+    tenShadowsUnlocked=true;
+    unlockedShikigami['rika']=true;
+    result.innerHTML='<span style="color:#ff44ff;font-size:1.1rem;">👸 RIKA UNLEASHED!</span><br><span style="color:#ffddff;">The Queen of Curses is yours. Press = to summon.</span>';
+    result.style.color='#ff44ff';
+    addDungeonLog('👸 Rika — Queen of Curses unlocked! Press = to summon.');
   }
   refreshInventory();
   if(typeof saveGame==='function')saveGame();
