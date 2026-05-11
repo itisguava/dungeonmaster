@@ -4834,7 +4834,7 @@ document.getElementById('redeemCodeBtn').addEventListener('click', () => {
 
   if (!code) { result.textContent = 'Enter a code first!'; result.style.color = '#888'; return; }
 
-  if (redeemedCodes[code]) {
+  if (redeemedCodes[code] && code!=='MOTHERLOAD') {
     result.textContent = 'Already redeemed this code!';
     result.style.color = '#cc8800';
     return;
