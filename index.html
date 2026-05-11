@@ -2304,7 +2304,13 @@ document.getElementById('spinEnchant').addEventListener('click', () => {
   if (enchWheelSpinning) return;
   const es = getEnchantSword();
   if (!es) { document.getElementById('enchantStatus').textContent = 'No sword selected!'; return; }
-  if (es.sw.enchantment) { document.getElementById('enchantStatus').textContent = 'This sword is already enchanted!'; return; }
+  if (es.sw.enchantment) {
+    if(!confirm('This sword has "'+es.sw.enchantment+'" enchantment. Re-enchanting will REPLACE it. Continue?'))return;
+    // Remove old enchantment stats before applying new
+    const oldEnch=ENCHANTMENTS.find(e2=>e2.id===es.sw.enchantment);
+    if(oldEnch){es.sw.damage-=oldEnch.dmg;es.sw.durability-=oldEnch.dur;if(es.sw.durability<1)es.sw.durability=1;}
+    es.sw.enchantment=null;
+  }
   if (gold < SPIN_COST) { document.getElementById('enchantStatus').textContent = 'Not enough gold! Need ' + SPIN_COST + '.'; return; }
 
   updateGold(-SPIN_COST);
