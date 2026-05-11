@@ -4816,6 +4816,14 @@ const SECRET_CODES = {
   'NIKNIKA': {
     name: 'Gear 5 — Sun God Nika', desc: 'Luffy\'s awakening. Everything is buffed: +50% DMG, +50% HP, +50% speed, attacks rubber-bounce between enemies.',
     opBuff: 'nika'
+  },
+  'SIXEYES': {
+    name: 'Six Eyes', desc: 'Gojo\'s Six Eyes. Max mana set to 1000. Mana costs halved. Abilities scale 2x faster with floor depth.',
+    jjkBuff: 'sixEyes'
+  },
+  'FULLSKILLS': {
+    name: 'Full Skills', desc: 'Max out every skill in the skill tree instantly.',
+    fullSkills: true
   }
 };
 
@@ -4900,6 +4908,12 @@ document.getElementById('redeemCodeBtn').addEventListener('click', () => {
     result.innerHTML = '<span style="color:#ff4444;">🏴‍☠️ DEVIL FRUIT AWAKENED!</span><br><span style="color:#ffdddd;font-weight:bold;">' + secret.name + '</span><br><span style="color:#aaa;">' + secret.desc + '</span>';
     result.style.color = '#ff4444';
     addDungeonLog('🏴‍☠️ ' + secret.name + ' power unlocked!');
+  } else if (secret.fullSkills) {
+    SKILL_TREE.forEach(sk=>{skillLevels[sk.id]=sk.maxLvl;});
+    result.innerHTML='<span style="color:#44dd77;font-size:1.1rem;">🌟 ALL SKILLS MAXED!</span><br><span style="color:#aaa;">Every skill in the tree is now at max level.</span>';
+    result.style.color='#44dd77';
+    addDungeonLog('🌟 All skills maxed out!');
+    if(typeof refreshSkillTree==='function')refreshSkillTree();
   }
   refreshInventory();
   if(typeof saveGame==='function')saveGame();
@@ -5865,8 +5879,21 @@ function drawDungeon(){
       ctx.beginPath();ctx.arc(ax,ay-15+mFloat,5,0,Math.PI*2);ctx.fill();
       ctx.strokeStyle='#ffdd44';ctx.lineWidth=2;ctx.beginPath();ctx.arc(ax,ay-20+mFloat,7,0,Math.PI*2);ctx.stroke();//wheel
       ctx.fillStyle='#222';ctx.beginPath();ctx.arc(ax-2,ay-15+mFloat,1.2,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(ax+2,ay-15+mFloat,1.2,0,Math.PI*2);ctx.fill();
+    }else if(at==='rika'){
+      const rFloat=Math.sin(Date.now()*0.004)*3;
+      ctx.save();ctx.globalAlpha=0.3;ctx.shadowColor='#ff44ff';ctx.shadowBlur=25;
+      ctx.fillStyle='#ff44ff';ctx.beginPath();ctx.arc(ax,ay-5+rFloat,16,0,Math.PI*2);ctx.fill();ctx.restore();
+      ctx.fillStyle='#cc44cc';ctx.beginPath();ctx.ellipse(ax,ay-5+rFloat,10,12,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#dd66dd';ctx.beginPath();ctx.arc(ax,ay-16+rFloat,7,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#ff88ff';ctx.beginPath();ctx.arc(ax-3,ay-16+rFloat,2,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(ax+3,ay-16+rFloat,2,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(ax-3,ay-16.5+rFloat,1,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(ax+3,ay-16.5+rFloat,1,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#cc44cc';ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(ax-10,ay-6+rFloat);ctx.quadraticCurveTo(ax-18,ay-10+rFloat,ax-16,ay+4+rFloat);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(ax+10,ay-6+rFloat);ctx.quadraticCurveTo(ax+18,ay-10+rFloat,ax+16,ay+4+rFloat);ctx.stroke();
+      ctx.fillStyle='#ffaaff';ctx.beginPath();ctx.moveTo(ax-4,ay-23+rFloat);ctx.lineTo(ax,ay-28+rFloat);ctx.lineTo(ax+4,ay-23+rFloat);ctx.fill();
+      ctx.save();for(let i=0;i<4;i++){const pa=Date.now()*0.005+i*1.57;const pr=14+Math.sin(pa*2)*3;
+        ctx.fillStyle='#ff66ff';ctx.globalAlpha=0.5;ctx.beginPath();ctx.arc(ax+Math.cos(pa)*pr,ay-5+rFloat+Math.sin(pa)*8,1.5,0,Math.PI*2);ctx.fill();}ctx.restore();
     }else{
-      ctx.fillStyle=ally.color||'#88aacc';ctx.beginPath();ctx.ellipse(ax,ay-3,6,4,0,0,Math.PI*2);ctx.fill();
     }
     // Ally HP bar
     if(ally.maxHp){const ahpPct=Math.max(0,ally.hp/ally.maxHp);ctx.fillStyle='#333';ctx.fillRect(ax-8,ay+6,16,3);ctx.fillStyle=ahpPct>0.5?'#44cc44':'#cc4422';ctx.fillRect(ax-8,ay+6,16*ahpPct,3);}
@@ -5925,7 +5952,9 @@ function refreshDungeon(){const need=document.getElementById('dungeonNeedSword')
   const sw=inventory[equippedIndex];const cl=typeof getPlayerClass==='function'?getPlayerClass():{name:'Warrior',icon:'⚔️'};
   if(eqInfo)eqInfo.innerHTML='<span style="color:#c89b3c;">'+sw.title+'</span> ['+sw.grade+'] DMG:'+sw.damage+' DUR:'+sw.durability+(sw.enchantment?' <span style="color:#cc88ff;">('+sw.enchantment+')</span>':'')+' | Class: <span style="color:#cc88ff;">'+cl.icon+' '+cl.name+'</span>';
   if(dungeon.active){ui.style.display='block';btn.style.display='none';drawDungeon();drawMinimap();}else{ui.style.display='none';btn.style.display='block';}}
-function startDungeon(){if(equippedIndex<0||!inventory[equippedIndex])return;const sw=inventory[equippedIndex];dungeon.floor=0;const bonusHp=typeof getSkillValue==='function'?getSkillValue('bonusHp',0):0;const ascHpMult=typeof getAscensionBonuses==='function'&&ascensionTier>0?getAscensionBonuses(ascensionTier).hpMult:1;const cl=typeof getPlayerClass==='function'?getPlayerClass():{hpMult:1,manaMult:1};dungeon.maxHp=Math.round((50+sw.durability*2+getTotalArmorStats().hp+bonusHp)*ascHpMult*cl.hpMult*(typeof isBuffActive==='function'&&isBuffActive('op','nika')?1.5:1));dungeon.hp=dungeon.maxHp;dungeon.loot=[];dungeon.active=true;dungeon.facing='down';dungeon.walkFrame=0;dungeon.allies=[];dungeon._phoenixUsed=false;dungeon._eventDmgBuff=1;dungeon._eventDmgFlat=0;dungeon._eventGoldBuff=1;dungeon._paladinHitCount=0;dungeon._dodgeCount=0;dungeon._bossKills=0;dungeon._noHealRun=true;const bonusMana=typeof getSkillValue==='function'?getSkillValue('bonusMana',0):0;playerMaxMana=Math.round((100+bonusMana)*cl.manaMult);playerMana=playerMaxMana;dungeonShield=0;berserkCounter=0;thornsCounter=0;dungeon._hasRevive=false;dungeon._timeStop=0;dungeon._domainUsed=false;if(typeof gameStats!=='undefined')gameStats.dungeonsAttempted++;if(typeof applyChallengeStart==='function')applyChallengeStart();loadFloor(0);const clId=typeof getClassId==='function'?getClassId():'warrior';document.getElementById('dungeonLog').textContent=cl.icon||'⚔️'+' '+CLASSES[clId].name+' enters the '+FLOOR_THEMES[0].name+'...\n';refreshDungeon();if(dungeon.gameLoop)clearInterval(dungeon.gameLoop);dungeon.gameLoop=setInterval(dungeonTick,1000/30);}
+function startDungeon(){if(equippedIndex<0||!inventory[equippedIndex])return;const sw=inventory[equippedIndex];dungeon.floor=0;const bonusHp=typeof getSkillValue==='function'?getSkillValue('bonusHp',0):0;const ascHpMult=typeof getAscensionBonuses==='function'&&ascensionTier>0?getAscensionBonuses(ascensionTier).hpMult:1;const cl=typeof getPlayerClass==='function'?getPlayerClass():{hpMult:1,manaMult:1};dungeon.maxHp=Math.round((50+sw.durability*2+getTotalArmorStats().hp+bonusHp)*ascHpMult*cl.hpMult*(typeof isBuffActive==='function'&&isBuffActive('op','nika')?1.5:1));dungeon.hp=dungeon.maxHp;dungeon.loot=[];dungeon.active=true;dungeon.facing='down';dungeon.walkFrame=0;dungeon.allies=[];dungeon._phoenixUsed=false;dungeon._eventDmgBuff=1;dungeon._eventDmgFlat=0;dungeon._eventGoldBuff=1;dungeon._paladinHitCount=0;dungeon._dodgeCount=0;dungeon._bossKills=0;dungeon._noHealRun=true;const bonusMana=typeof getSkillValue==='function'?getSkillValue('bonusMana',0):0;playerMaxMana=Math.round((100+bonusMana)*cl.manaMult);
+  if(typeof isBuffActive==='function'&&isBuffActive('jjk','sixEyes'))playerMaxMana=Math.max(playerMaxMana,1000);
+  playerMana=playerMaxMana;dungeonShield=0;berserkCounter=0;thornsCounter=0;dungeon._hasRevive=false;dungeon._timeStop=0;dungeon._domainUsed=false;if(typeof gameStats!=='undefined')gameStats.dungeonsAttempted++;if(typeof applyChallengeStart==='function')applyChallengeStart();loadFloor(0);const clId=typeof getClassId==='function'?getClassId():'warrior';document.getElementById('dungeonLog').textContent=cl.icon||'⚔️'+' '+CLASSES[clId].name+' enters the '+FLOOR_THEMES[0].name+'...\n';refreshDungeon();if(dungeon.gameLoop)clearInterval(dungeon.gameLoop);dungeon.gameLoop=setInterval(dungeonTick,1000/30);}
 function loadFloor(floor){dungeon.floor=floor;const gen=genDungeon(floor);dungeon.map=gen.map;dungeon.enemies=gen.enemies;dungeon.chests=gen.chests;dungeon.npcs=gen.npcs||[];dungeon.puzzles=gen.puzzles||[];dungeon.events=gen.events||[];dungeon.px=gen.spawnX;dungeon.py=gen.spawnY;
   dungeon.explored=[];for(let y=0;y<DH;y++){dungeon.explored[y]=[];for(let x=0;x<DW;x++)dungeon.explored[y][x]=false;}
   document.getElementById('dFloorNum').textContent=(floor+1);
@@ -5967,8 +5996,8 @@ function endDungeon(success){
 document.addEventListener('keydown',(e)=>{if(!dungeon.active)return;const dt=document.getElementById('tab-dungeon');if(!dt||!dt.classList.contains('active'))return;if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A'){e.preventDefault();dKeys.left=true;}if(e.key==='ArrowRight'||e.key==='d'||e.key==='D'){e.preventDefault();dKeys.right=true;}if(e.key==='ArrowUp'||e.key==='w'||e.key==='W'){e.preventDefault();dKeys.up=true;}if(e.key==='ArrowDown'||e.key==='s'||e.key==='S'){e.preventDefault();dKeys.down=true;}if(e.key===' '){e.preventDefault();dKeys.attack=true;}if(e.key>='1'&&e.key<='4'){e.preventDefault();useAbility(parseInt(e.key)-1);}
   // Ten Shadows: 5-9 summon shikigami
   if(typeof tenShadowsUnlocked!=='undefined'&&tenShadowsUnlocked){
-    const shOrder=['toad','serpent','rabbit','elephant','ox','tiger','mahoraga'];
-    const shKeys={'5':0,'6':1,'7':2,'8':3,'9':4,'0':5,'-':6};
+    const shOrder=['toad','serpent','rabbit','elephant','ox','tiger','mahoraga','rika'];
+    const shKeys={'5':0,'6':1,'7':2,'8':3,'9':4,'0':5,'-':6,'=':7};
     if(shKeys[e.key]!==undefined){e.preventDefault();summonShikigami(shOrder[shKeys[e.key]]);}
   }
   // Boogie Woogie (E) — swap with nearest enemy
@@ -6228,8 +6257,14 @@ function useAbility(slotIdx) {
   if (!abId) return;
   const ab = ABILITIES.find(a => a.id === abId);
   if (!ab) return;
-  if (playerMana < ab.manaCost) { addDungeonLog('Not enough mana! Need ' + ab.manaCost); return; }
-  playerMana -= ab.manaCost;
+  // Six Eyes: halve mana costs
+  const manaCost=isBuffActive('jjk','sixEyes')?Math.ceil(ab.manaCost/2):ab.manaCost;
+  if (playerMana < manaCost) { addDungeonLog('Not enough mana! Need ' + manaCost); return; }
+  playerMana -= manaCost;
+  // Floor scaling: abilities get stronger the deeper you go
+  const floorScale=1+dungeon.floor*0.08; // +8% per floor
+  const sixEyesMult=isBuffActive('jjk','sixEyes')?2:1; // Six Eyes doubles scaling
+  const abilityScale=1+(floorScale-1)*sixEyesMult;
 
   if (ab.type === 'attack' || ab.type === 'drain') {
     // Find nearest enemy
@@ -6275,10 +6310,10 @@ function useAbility(slotIdx) {
         spawnDungeonParticle(nearest.x,nearest.y,ab.color,8,4);
       }
       const won = dungeonBattle(nearest.data);
-      nearest.data._extraDmg = ab.dmg;
+      nearest.data._extraDmg = Math.round(ab.dmg*abilityScale);
       if (won) { nearest.alive = false; recordEnemy(nearest.data.name, nearest.data); }
       else { endDungeon(false); return; }
-      if (ab.type === 'drain') { dungeon.hp = Math.min(dungeon.maxHp, dungeon.hp + ab.dmg); addDungeonLog(ab.name + ' heals ' + ab.dmg + ' HP!'); spawnDungeonParticle(dungeon.px,dungeon.py,'#aa44cc',6,2); }
+      if (ab.type === 'drain') { const dh=Math.round(ab.dmg*abilityScale);dungeon.hp = Math.min(dungeon.maxHp, dungeon.hp + dh); addDungeonLog(ab.name + ' heals ' + dh + ' HP!'); spawnDungeonParticle(dungeon.px,dungeon.py,'#aa44cc',6,2); }
       addDungeonLog(ab.icon + ' ' + ab.name + '! -' + ab.manaCost + ' mana');
     } else { addDungeonLog('No enemy nearby!'); playerMana += ab.manaCost; }
   } else if (ab.type === 'aoe') {
@@ -6300,18 +6335,20 @@ function useAbility(slotIdx) {
   } else if (ab.type === 'heal') {
     if(dungeon.modifier&&dungeon.modifier.effect.noHeal){addDungeonLog('❌ Cursed floor! Healing is blocked!');playerMana+=ab.manaCost;updateDungeonHp();return;}
     if(dungeon.challenge==='ironman'){addDungeonLog('❌ No healing in Ironman!');playerMana+=ab.manaCost;updateDungeonHp();return;}
-    dungeon.hp = Math.min(dungeon.maxHp, dungeon.hp + ab.heal);
+    const scaledHeal=Math.round(ab.heal*abilityScale);
+    dungeon.hp = Math.min(dungeon.maxHp, dungeon.hp + scaledHeal);
     dungeon._noHealRun=false;
     spawnDungeonParticle(dungeon.px,dungeon.py,'#44dd77',10,2);
     spawnDungeonParticle(dungeon.px,dungeon.py-10,'#88ffaa',6,1);
-    spawnFloatingNumber(dungeon.px,dungeon.py-20,'+'+ab.heal+' HP','#44dd77');
-    addDungeonLog(ab.icon + ' Healed ' + ab.heal + ' HP! -' + ab.manaCost + ' mana');
+    spawnFloatingNumber(dungeon.px,dungeon.py-20,'+'+scaledHeal+' HP','#44dd77');
+    addDungeonLog(ab.icon + ' Healed ' + scaledHeal + ' HP! -' + manaCost + ' mana');
   } else if (ab.type === 'shield') {
-    dungeonShield += ab.shield;
+    const scaledShield=Math.round(ab.shield*abilityScale);
+    dungeonShield += scaledShield;
     spawnDungeonParticle(dungeon.px,dungeon.py,'#8888ff',12,3);
     spawnDungeonParticle(dungeon.px,dungeon.py,'#aaaaff',6,2);
-    spawnFloatingNumber(dungeon.px,dungeon.py-20,'+'+ab.shield+' Shield','#8888ff');
-    addDungeonLog(ab.icon + ' Shield +' + ab.shield + '! -' + ab.manaCost + ' mana');
+    spawnFloatingNumber(dungeon.px,dungeon.py-20,'+'+scaledShield+' Shield','#8888ff');
+    addDungeonLog(ab.icon + ' Shield +' + scaledShield + '! -' + manaCost + ' mana');
   } else if (ab.type === 'buff') {
     if(ab.id==='berserk'){berserkCounter=3;spawnDungeonParticle(dungeon.px,dungeon.py,'#dd3322',12,3);spawnDungeonParticle(dungeon.px,dungeon.py,'#ff6644',8,4);spawnFloatingNumber(dungeon.px,dungeon.py-20,'BERSERK!','#dd3322');addDungeonLog(ab.icon+' BERSERK! Double damage for 3 fights!');}
     else if(ab.id==='thorns'){thornsCounter=3;spawnDungeonParticle(dungeon.px,dungeon.py,'#44aa44',10,2);spawnDungeonParticle(dungeon.px,dungeon.py,'#66cc66',8,3);spawnFloatingNumber(dungeon.px,dungeon.py-20,'THORNS!','#44aa44');addDungeonLog(ab.icon+' Thorn Armor! Reflecting 50% damage for 3 fights!');}
@@ -6332,7 +6369,7 @@ function useAbility(slotIdx) {
       }
     }
   } else if (ab.type === 'manaburn') {
-    const burnDmg=Math.floor(playerMana*2);
+    const burnDmg=Math.floor(playerMana*2*abilityScale);
     playerMana=0;
     let nearest=null,nearDist=Infinity;
     for(const e of dungeon.enemies){if(!e.alive)continue;const d=Math.abs(dungeon.px-e.x)+Math.abs(dungeon.py-e.y);if(d<60&&d<nearDist){nearDist=d;nearest=e;}}
@@ -6359,14 +6396,14 @@ function useAbility(slotIdx) {
     addDungeonLog(ab.icon+' Second Wind active! Will revive at 50% HP if killed. -'+ab.manaCost+' mana');
   } else if (ab.type === 'bloodpact') {
     if(dungeon.hp<=20){addDungeonLog('Not enough HP!');return;}
-    dungeon.hp-=20;playerMana=Math.min(playerMaxMana,playerMana+50);
+    dungeon.hp-=20;const bpMana=Math.round(50*abilityScale);playerMana=Math.min(playerMaxMana,playerMana+bpMana);
     spawnDungeonParticle(dungeon.px,dungeon.py,'#cc1133',10,3);
     spawnDungeonParticle(dungeon.px,dungeon.py,'#4488ff',8,3);
     spawnFloatingNumber(dungeon.px,dungeon.py-15,'-20 HP','#cc1133');
     spawnFloatingNumber(dungeon.px,dungeon.py-25,'+50 MP','#4488ff');
     addDungeonLog(ab.icon+' Blood Pact! -20 HP, +50 mana');
   } else if (ab.type === 'timestop') {
-    dungeon._timeStop=90;
+    dungeon._timeStop=Math.round(90*abilityScale);
     spawnDungeonParticle(dungeon.px,dungeon.py,'#44ddcc',15,5);
     spawnDungeonParticle(dungeon.px,dungeon.py,'#88ffee',10,3);
     spawnDungeonParticle(dungeon.px,dungeon.py,'#ffffff',6,2);
@@ -6375,7 +6412,8 @@ function useAbility(slotIdx) {
   } else if (ab.type === 'summon') {
     const sa=Math.random()*Math.PI*2,sd=30;
     if(!dungeon.allies)dungeon.allies=[];
-    dungeon.allies.push({x:dungeon.px+Math.cos(sa)*sd,y:dungeon.py+Math.sin(sa)*sd,hp:40,maxHp:40,dmg:12,alive:true,type:'wolf',name:'Spirit Wolf',color:'#88aacc',speed:2,atkRate:15,aggroRange:80,atkTimer:0});
+    const wolfHp=Math.round(40*abilityScale),wolfDmg=Math.round(12*abilityScale);
+    dungeon.allies.push({x:dungeon.px+Math.cos(sa)*sd,y:dungeon.py+Math.sin(sa)*sd,hp:wolfHp,maxHp:wolfHp,dmg:wolfDmg,alive:true,type:'wolf',name:'Spirit Wolf',color:'#88aacc',speed:2,atkRate:15,aggroRange:80,atkTimer:0});
     spawnDungeonParticle(dungeon.px,dungeon.py,'#88aacc',12,4);
     spawnDungeonParticle(dungeon.px+Math.cos(sa)*sd,dungeon.py+Math.sin(sa)*sd,'#88aacc',8,3);
     spawnDungeonParticle(dungeon.px+Math.cos(sa)*sd,dungeon.py+Math.sin(sa)*sd,'#ffffff',5,2);
@@ -6432,7 +6470,7 @@ function refreshAbilities() {
     if(tenShadowsUnlocked){
       const sgGrid=document.getElementById('shikigamiGrid');
       const shOrder=['toad','serpent','rabbit','elephant','ox','tiger','mahoraga'];
-      const shKeys=['5','6','7','8','9','0','-'];
+      const shKeys=['5','6','7','8','9','0','-','='];
       let shtml='';
       SHIKIGAMI.forEach((sh,idx)=>{
         const owned=unlockedShikigami[sh.id];
@@ -6473,7 +6511,8 @@ function refreshAbilities() {
         {id:'domainExpansion',name:'Malevolent Shrine',desc:'Kill all enemies on floor',key:'C',color:'#cc2244',icon:'🔴'},
         {id:'boogieWoogie',name:'Boogie Woogie',desc:'Swap positions with nearest enemy',key:'E',color:'#ffdd44',icon:'👏'},
         {id:'curtain',name:'Curtain',desc:'Shield that blocks 80 DMG',key:'F',color:'#4466aa',icon:'🔵'},
-        {id:'puppet',name:'Puppet Manipulation',desc:'Mind-control nearest enemy for 10s',key:'V',color:'#aa44cc',icon:'🎭'}
+        {id:'puppet',name:'Puppet Manipulation',desc:'Mind-control nearest enemy for 10s',key:'V',color:'#aa44cc',icon:'🎭'},
+        {id:'sixEyes',name:'Six Eyes',desc:'1000 max mana, halved costs, 2x ability scaling',key:'Passive',color:'#44ddff',icon:'👁️'}
       ];
       const jGrid=document.getElementById('jjkGrid');
       let jhtml='';
@@ -7197,7 +7236,9 @@ const SHIKIGAMI=[
   {id:'tiger',name:'Round Deer (Tiger)',desc:'Swift tiger with critical strikes',quest:'Get a 15+ hit combo',questCheck:()=>(typeof comboCount!=='undefined'&&comboCount>=15),
     hp:45,dmg:25,color:'#dd8833',speed:2.5,atkRate:8,aggroRange:80},
   {id:'mahoraga',name:'Mahoraga',desc:'The most powerful shikigami. Adapts to anything.',quest:'Clear floor 20 on Ironman challenge',questCheck:()=>dungeon.challenge==='ironman'&&dungeon.floor>=19&&dungeon.hp>0,
-    hp:200,dmg:40,color:'#cc8844',speed:2,atkRate:10,aggroRange:100}
+    hp:200,dmg:40,color:'#cc8844',speed:2,atkRate:10,aggroRange:100},
+  {id:'rika',name:'Rika — Queen of Curses',desc:'The ultimate cursed spirit. Unmatched power.',quest:'Reach floor 50 in endless mode',questCheck:()=>gameStats.highestFloor>=50,
+    hp:2000,dmg:400,color:'#ff44ff',speed:3,atkRate:5,aggroRange:150}
 ];
 const unlockedShikigami={};
 let activeShikigami=null;
